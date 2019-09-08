@@ -1,4 +1,195 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[David's Hello Swift! Blog RSS Feed]]></title><description><![CDATA[Personal blog by David Lin. I write something about Swift.]]></description><link>https://yoxisem544.github.io</link><generator>GatsbyJS</generator><lastBuildDate>Sat, 31 Aug 2019 14:51:07 GMT</lastBuildDate><item><title><![CDATA[Testing File]]></title><description><![CDATA[🚕🚕🚕🚕🚕🚕🚕🚕]]></description><link>https://yoxisem544.github.io/testing-file/</link><guid isPermaLink="false">https://yoxisem544.github.io/testing-file/</guid><pubDate>Fri, 30 Aug 2019 00:00:00 GMT</pubDate><content:encoded>&lt;p&gt;How to solve: &lt;a href=&quot;https://blog.oisulab.com/maybe-absolute-links/&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;https://blog.oisulab.com/maybe-absolute-links/&lt;/a&gt;&lt;/p&gt;
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[David's Hello Swift! Blog RSS Feed]]></title><description><![CDATA[Personal blog by David Lin. I write something about Swift.]]></description><link>https://yoxisem544.github.io</link><generator>GatsbyJS</generator><lastBuildDate>Sun, 08 Sep 2019 13:03:21 GMT</lastBuildDate><item><title><![CDATA[Let's talk about OAuth Refresh Token]]></title><description><![CDATA[How can we deal with OAuth refresh token on iOS?]]></description><link>https://yoxisem544.github.io/lets-talk-about-oauth-refresh-token/</link><guid isPermaLink="false">https://yoxisem544.github.io/lets-talk-about-oauth-refresh-token/</guid><pubDate>Sun, 08 Sep 2019 00:00:00 GMT</pubDate><content:encoded>&lt;h1 id=&quot;what-is-oauth&quot;&gt;&lt;a href=&quot;#what-is-oauth&quot; aria-hidden class=&quot;anchor&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;What is OAuth?&lt;/h1&gt;
+&lt;p&gt;網路上關於 OAuth 2.0 的文章很多，包含 Facebook 的 access token 也是類似這樣的機制，這邊不贅述了。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;可以參考：(關於OAuth 2.0-以Facebook為例 - Justin Lee)(&lt;a href=&quot;https://medium.com/@justinlee_78563/%E9%97%9C%E6%96%BCoauth-2-0-%E4%BB%A5facebook%E7%82%BA%E4%BE%8B-6f78a4a55f52&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;https://medium.com/@justinlee_78563/%E9%97%9C%E6%96%BCoauth-2-0-%E4%BB%A5facebook%E7%82%BA%E4%BE%8B-6f78a4a55f52&lt;/a&gt;)&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;/blockquote&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&quot;當-access-token-過期&quot;&gt;&lt;a href=&quot;#%E7%95%B6-access-token-%E9%81%8E%E6%9C%9F&quot; aria-hidden class=&quot;anchor&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;當 Access Token 過期&lt;/h2&gt;
+&lt;p&gt;Access Token 在某些情況下會失效&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Server 主動 revoke access token&lt;/li&gt;
+&lt;li&gt;Access token 超過可以運作的時效（過期）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;這時我們就要拿 refresh token 去向 server 換取一組新的 access token 跟 refresh token。&lt;/p&gt;
+&lt;h2 id=&quot;使用-refresh-token-換取新的-access-token&quot;&gt;&lt;a href=&quot;#%E4%BD%BF%E7%94%A8-refresh-token-%E6%8F%9B%E5%8F%96%E6%96%B0%E7%9A%84-access-token&quot; aria-hidden class=&quot;anchor&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;使用 refresh token 換取新的 access token&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;什麼情況下我們會想要使用 refresh token 去換一組新的 access token 呢？&lt;/strong&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;也許是 access token 快過期的時候&lt;/li&gt;
+&lt;li&gt;或是 api response 回了 401 403 之類 unauth 的 error code 給我們的時候&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;strong&gt;而使用 refresh token 去換一組新的 access token，可能要注意：&lt;/strong&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;手機是否有網路，已經失敗的 api 是不是要 retry？&lt;/li&gt;
+&lt;li&gt;是不是要在 api 取得 401 403 error code 時觸發 refresh token 機制？&lt;/li&gt;
+&lt;li&gt;refresh token 一次只能執行一次（同一組 refresh token 換兩次 access token 會掛掉）&lt;/li&gt;
+&lt;/ol&gt;
+&lt;hr&gt;
+&lt;h1 id=&quot;情況如此複雜，我們如何處理-token-refresh-機制？&quot;&gt;&lt;a href=&quot;#%E6%83%85%E6%B3%81%E5%A6%82%E6%AD%A4%E8%A4%87%E9%9B%9C%EF%BC%8C%E6%88%91%E5%80%91%E5%A6%82%E4%BD%95%E8%99%95%E7%90%86-token-refresh-%E6%A9%9F%E5%88%B6%EF%BC%9F&quot; aria-hidden class=&quot;anchor&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;情況如此複雜，我們如何處理 token refresh 機制？&lt;/h1&gt;
+&lt;p&gt;其實要處理以上的狀況並不會太難，首先需要先確保你能實作以下兩個輔助機能：&lt;/p&gt;
+&lt;h2 id=&quot;1-api-call-必須要能-retry&quot;&gt;&lt;a href=&quot;#1-api-call-%E5%BF%85%E9%A0%88%E8%A6%81%E8%83%BD-retry&quot; aria-hidden class=&quot;anchor&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;1. api call 必須要能 retry&lt;/h2&gt;
+&lt;p&gt;當 api 取得 401 403 error code 時，我們需要觸發 refresh 機制，同時把失敗的 api call 放到 retry pool 中，等到 refresh 完成後，再重新執行一次。&lt;/p&gt;
+&lt;h2 id=&quot;2-api-call-必須能被暫停&quot;&gt;&lt;a href=&quot;#2-api-call-%E5%BF%85%E9%A0%88%E8%83%BD%E8%A2%AB%E6%9A%AB%E5%81%9C&quot; aria-hidden class=&quot;anchor&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;2. api call 必須能被暫停&lt;/h2&gt;
+&lt;p&gt;當 refresh 機制運作中，所有的 api call 都要被暫停住，等到 refresh 完成後才放行。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;blockquote&gt;
+&lt;blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;沒有網路的狀況 api call 以及 refresh 機制都無法動作，所以不會在沒有網路的狀態下將使用者登出。因為無從得知 access token &amp;#x26; refresh token 雙雙失效。（只有在 refresh token 也失效的狀態下，才需要將使用者登出）&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;/blockquote&gt;
+&lt;/blockquote&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;我們來看如果某一個 api 回了 403 給我們，會發生什麼事&lt;/p&gt;
+&lt;p&gt;
+  &lt;a
+    class=&quot;gatsby-resp-image-link&quot;
+    href=&quot;https://yoxisem544.github.io/static/d5511c26f352dcfd8cdd6823c75d7e7d/c3748/api-1.png&quot;
+    style=&quot;display: block&quot;
+    target=&quot;_blank&quot;
+    rel=&quot;noopener&quot;
+  &gt;
+  
+  &lt;span
+    class=&quot;gatsby-resp-image-wrapper&quot;
+    style=&quot;position: relative; display: block;  max-width: 590px; margin-left: auto; margin-right: auto;&quot;
+  &gt;
+    &lt;span
+      class=&quot;gatsby-resp-image-background-image&quot;
+      style=&quot;padding-bottom: 33.292231812577064%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAHCAYAAAAIy204AAAACXBIWXMAAAsSAAALEgHS3X78AAAArElEQVQoz61Ruw7CMAzM//8KCyMLn8DAiFgYaCu1UNJH0sRJfKTJUDEgQMXSSZYfZ/sskI2xzlI/M1tR1w1fixJKaRjroLSBnuxPaOUA70MiFUopSNmxtYQQYzHxJXyuD2FegkPmY7HmTsevSsWTIYgIxhh2zqXJzvmP8JFnLCqcDkfIfpxjy4b39sFFWaHrBxD5pMlk3kNHjSl2njdbXHZ72Og3t27R8M9fDk/7KCYFR1mzTQAAAABJRU5ErkJggg==&apos;); background-size: cover; display: block;&quot;
+    &gt;
+      &lt;img
+        class=&quot;gatsby-resp-image-image&quot;
+        style=&quot;width: 100%; height: 100%; margin: 0; vertical-align: middle; position: absolute; top: 0; left: 0; box-shadow: inset 0px 0px 0px 400px white;&quot;
+        alt=&quot;refresh-1&quot;
+        title=&quot;&quot;
+        src=&quot;https://yoxisem544.github.io/static/d5511c26f352dcfd8cdd6823c75d7e7d/b9e4f/api-1.png&quot;
+        srcset=&quot;https://yoxisem544.github.io/static/d5511c26f352dcfd8cdd6823c75d7e7d/cf440/api-1.png 148w,https://yoxisem544.github.io/static/d5511c26f352dcfd8cdd6823c75d7e7d/d2d38/api-1.png 295w,https://yoxisem544.github.io/static/d5511c26f352dcfd8cdd6823c75d7e7d/b9e4f/api-1.png 590w,https://yoxisem544.github.io/static/d5511c26f352dcfd8cdd6823c75d7e7d/f9b6a/api-1.png 885w,https://yoxisem544.github.io/static/d5511c26f352dcfd8cdd6823c75d7e7d/2d849/api-1.png 1180w,https://yoxisem544.github.io/static/d5511c26f352dcfd8cdd6823c75d7e7d/c3748/api-1.png 1622w&quot;
+        sizes=&quot;(max-width: 590px) 100vw, 590px&quot;
+      /&gt;
+    &lt;/span&gt;
+  &lt;/span&gt;
+  
+  &lt;/a&gt;
+    &lt;/p&gt;
+&lt;p&gt;依照上面的設計思路，我們會暫停 api call thread，同時處發 refresh 機制還有 retry 失敗的 api call&lt;/p&gt;
+&lt;p&gt;
+  &lt;a
+    class=&quot;gatsby-resp-image-link&quot;
+    href=&quot;https://yoxisem544.github.io/static/bc07ee4c0d410c61def9a56212dddf8e/8fde6/api-3.png&quot;
+    style=&quot;display: block&quot;
+    target=&quot;_blank&quot;
+    rel=&quot;noopener&quot;
+  &gt;
+  
+  &lt;span
+    class=&quot;gatsby-resp-image-wrapper&quot;
+    style=&quot;position: relative; display: block;  max-width: 590px; margin-left: auto; margin-right: auto;&quot;
+  &gt;
+    &lt;span
+      class=&quot;gatsby-resp-image-background-image&quot;
+      style=&quot;padding-bottom: 39.21085080147966%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAICAYAAAD5nd/tAAAACXBIWXMAAAsSAAALEgHS3X78AAABPklEQVQoz52Q6U7CQBSF+/6vow8AMcYl0HSlFNQugNBQIortdJs53rmUGhPjDyf5epe5y+kYOB+F/x/uVXTIHI0s26v15hVlKSCqBkVZoRR1T8Wxpq5bpPkBo3A+1ImqxvGjwKkQgyBDCIHT6VN1XQe9Q9JHDQzrufhYllhkO05KKbmmaTtFXEQqQ/aNXSfR0lA9mK0EGrHDW55gt39HQWovD9PSpex7NJfhrNAPU9izCB5ZP1yxPUP+PIZLTG4tOM4S3mJFcQo3iDG9d+AFMcczyvcqYZjuMx7MUJneC6xZDMv/iR0kuLka4fHOhU3NOjatJcbXY5j2E6ZepCw/QtO0WqIynCBRNg3SWL/A+SBlf+o8Y0LwskD/WcK+SzPqpj0rXG8PSDd7lW5ybf8kXmWIiO8c96j1NtfvrhVmXxf+WUp0EPw7AAAAAElFTkSuQmCC&apos;); background-size: cover; display: block;&quot;
+    &gt;
+      &lt;img
+        class=&quot;gatsby-resp-image-image&quot;
+        style=&quot;width: 100%; height: 100%; margin: 0; vertical-align: middle; position: absolute; top: 0; left: 0; box-shadow: inset 0px 0px 0px 400px white;&quot;
+        alt=&quot;refresh-2&quot;
+        title=&quot;&quot;
+        src=&quot;https://yoxisem544.github.io/static/bc07ee4c0d410c61def9a56212dddf8e/b9e4f/api-3.png&quot;
+        srcset=&quot;https://yoxisem544.github.io/static/bc07ee4c0d410c61def9a56212dddf8e/cf440/api-3.png 148w,https://yoxisem544.github.io/static/bc07ee4c0d410c61def9a56212dddf8e/d2d38/api-3.png 295w,https://yoxisem544.github.io/static/bc07ee4c0d410c61def9a56212dddf8e/b9e4f/api-3.png 590w,https://yoxisem544.github.io/static/bc07ee4c0d410c61def9a56212dddf8e/8fde6/api-3.png 811w&quot;
+        sizes=&quot;(max-width: 590px) 100vw, 590px&quot;
+      /&gt;
+    &lt;/span&gt;
+  &lt;/span&gt;
+  
+  &lt;/a&gt;
+    &lt;/p&gt;
+&lt;p&gt;即使在 refresh 時會花 10 秒鐘的時間去取得新的 access token &amp;#x26; refresh token，且在這個期間又有新的 api call 觸發，所有的 api call（新的 or 失敗重試的），都會等到 refresh 完成後才開始動作。&lt;/p&gt;
+&lt;p&gt;
+  &lt;a
+    class=&quot;gatsby-resp-image-link&quot;
+    href=&quot;https://yoxisem544.github.io/static/a7da5cc61e0c35f39ea94ef52ae0ee9d/8fde6/api-4.png&quot;
+    style=&quot;display: block&quot;
+    target=&quot;_blank&quot;
+    rel=&quot;noopener&quot;
+  &gt;
+  
+  &lt;span
+    class=&quot;gatsby-resp-image-wrapper&quot;
+    style=&quot;position: relative; display: block;  max-width: 590px; margin-left: auto; margin-right: auto;&quot;
+  &gt;
+    &lt;span
+      class=&quot;gatsby-resp-image-background-image&quot;
+      style=&quot;padding-bottom: 39.21085080147966%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAICAYAAAD5nd/tAAAACXBIWXMAAAsSAAALEgHS3X78AAABJ0lEQVQoz51Ry0rDQBTN/y9c6UZw5Qe48QNEFAouLFm4aEFbqDZJa97zfhzvTNKAtig4cLiTk5lzz5mbYFge/1/xrqdFpU7yYuc371twISCkBueS9mqEjGDEaWWwKSvcLxdQ2sT/Qio0LUPPxGQo4ZyjbTtvjIFzDpaqNXaozhOHkbf42JeYr9axqbWWeB/EfWgwmvTJr2HcJ8rdClnZQ1ADzjgUiXUdO87tB5OJoKhd10NbB1bssX2cYT9Pkc2ewOsakpzk6QuatzXILHRwT2eDK00IsZUyk2hS1Q2yLPeCDlbLVzyfXSC9ukZ6fol2W8QXX9zcYn33AEt7QW8qlY4Igm3Pfc/kt8hHEzY/voOQ+2PSU+RJmoiIMAUM9cBhhD+Ng1io+Re5jW78Si395gAAAABJRU5ErkJggg==&apos;); background-size: cover; display: block;&quot;
+    &gt;
+      &lt;img
+        class=&quot;gatsby-resp-image-image&quot;
+        style=&quot;width: 100%; height: 100%; margin: 0; vertical-align: middle; position: absolute; top: 0; left: 0; box-shadow: inset 0px 0px 0px 400px white;&quot;
+        alt=&quot;refresh-3&quot;
+        title=&quot;&quot;
+        src=&quot;https://yoxisem544.github.io/static/a7da5cc61e0c35f39ea94ef52ae0ee9d/b9e4f/api-4.png&quot;
+        srcset=&quot;https://yoxisem544.github.io/static/a7da5cc61e0c35f39ea94ef52ae0ee9d/cf440/api-4.png 148w,https://yoxisem544.github.io/static/a7da5cc61e0c35f39ea94ef52ae0ee9d/d2d38/api-4.png 295w,https://yoxisem544.github.io/static/a7da5cc61e0c35f39ea94ef52ae0ee9d/b9e4f/api-4.png 590w,https://yoxisem544.github.io/static/a7da5cc61e0c35f39ea94ef52ae0ee9d/8fde6/api-4.png 811w&quot;
+        sizes=&quot;(max-width: 590px) 100vw, 590px&quot;
+      /&gt;
+    &lt;/span&gt;
+  &lt;/span&gt;
+  
+  &lt;/a&gt;
+    &lt;/p&gt;
+&lt;hr&gt;
+&lt;h1 id=&quot;來看點-code-吧&quot;&gt;&lt;a href=&quot;#%E4%BE%86%E7%9C%8B%E9%BB%9E-code-%E5%90%A7&quot; aria-hidden class=&quot;anchor&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;來看點 Code 吧&lt;/h1&gt;
+&lt;h2 id=&quot;關於-retry&quot;&gt;&lt;a href=&quot;#%E9%97%9C%E6%96%BC-retry&quot; aria-hidden class=&quot;anchor&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;關於 Retry&lt;/h2&gt;
+&lt;p&gt;我使用了 PromiseKit 來幫我處理 callback 問題，同時 PromiseKit 也能處理 &lt;a href=&quot;https://github.com/mxcl/PromiseKit/blob/master/Documentation/CommonPatterns.md#retry--polling&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;retry&lt;/a&gt; 的部分&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;swift&quot;&gt;&lt;pre class=&quot;language-swift&quot;&gt;&lt;code class=&quot;language-swift&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;func&lt;/span&gt; attempt&lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;T&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;maximumRetryCount&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token builtin&quot;&gt;Int&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; delayBeforeRetry&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token builtin&quot;&gt;DispatchTimeInterval&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;seconds&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;_&lt;/span&gt; body&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; @escaping &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token builtin&quot;&gt;Promise&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;T&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token builtin&quot;&gt;Promise&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;T&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;token keyword&quot;&gt;var&lt;/span&gt; attempts &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;0&lt;/span&gt;
+    &lt;span class=&quot;token keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;attempt&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token builtin&quot;&gt;Promise&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;T&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+        attempts &lt;span class=&quot;token operator&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;1&lt;/span&gt;
+        &lt;span class=&quot;token keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;body&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;recover &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt; error &lt;span class=&quot;token operator&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token builtin&quot;&gt;Promise&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;T&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;in&lt;/span&gt;
+            &lt;span class=&quot;token keyword&quot;&gt;guard&lt;/span&gt; attempts &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt; maximumRetryCount &lt;span class=&quot;token keyword&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;throw&lt;/span&gt; error &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+            &lt;span class=&quot;token keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;after&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;delayBeforeRetry&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;then&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;on&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;nil&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; attempt&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;token keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;attempt&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;token function&quot;&gt;attempt&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;maximumRetryCount&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;token function&quot;&gt;yourApiGoesHere&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token comment&quot;&gt;// api 是個 promise&lt;/span&gt;
+&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;then &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;token comment&quot;&gt;//…&lt;/span&gt;
+&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token keyword&quot;&gt;catch&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;_&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;in&lt;/span&gt;
+    &lt;span class=&quot;token comment&quot;&gt;// we attempted three times but still failed&lt;/span&gt;
+&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;blockquote&gt;
+&lt;blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;如果使用 Rx 的話，就要使用 &lt;a href=&quot;https://github.com/RxSwiftCommunity/RxSwiftExt&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;RxSwiftExt&lt;/a&gt; 提供的 retry 方法（原本 Rx 提供的 retry 並沒有辦法等待一段時間才重試，不符合我們的需求）&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;/blockquote&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&quot;關於-api-call-暫停&quot;&gt;&lt;a href=&quot;#%E9%97%9C%E6%96%BC-api-call-%E6%9A%AB%E5%81%9C&quot; aria-hidden class=&quot;anchor&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;關於 api call 暫停&lt;/h2&gt;
+&lt;p&gt;這邊相對簡單很多，&lt;code class=&quot;language-text&quot;&gt;DispatchQueue&lt;/code&gt; 提供我們一個可以暫停 thread 的方法：&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;swift&quot;&gt;&lt;pre class=&quot;language-swift&quot;&gt;&lt;code class=&quot;language-swift&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;let&lt;/span&gt; requestQueue&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token builtin&quot;&gt;DispatchQueue&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;DispatchQueue&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;label&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;com.hello.request_queue&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+requestQueue&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;suspend&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token comment&quot;&gt;// 暫停 thread&lt;/span&gt;
+requestQueue&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;resume&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token comment&quot;&gt;// 重新啟動 thread&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;於是我們可以把所有的 api call 放到該 thread 執行，當 refresh 機制一被觸發，就可以把該 thread 暫停住。（記得不要把 refresh 機制也放到該 thread 中了，不然 refresh 永遠不會成功）&lt;/p&gt;
+&lt;hr&gt;
+&lt;h1 id=&quot;結語&quot;&gt;&lt;a href=&quot;#%E7%B5%90%E8%AA%9E&quot; aria-hidden class=&quot;anchor&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;結語&lt;/h1&gt;
+&lt;p&gt;看到這邊會不會覺得很困惑，為什麼沒有提到太多程式面的部分呢？這就要取決於你的網路層是怎麼建構的了，以上的條件都必須滿足，才會比較好做到上面講的 refresh 機制。&lt;/p&gt;
+&lt;p&gt;會使用 PromiseKit 的原因不外乎就是可以解決 callback 問題，且如果你的 api call 被包成 promise 後，要再加上 retry 機制相對就簡單很多了。&lt;/p&gt;
+&lt;p&gt;再來我會使用 &lt;a href=&quot;https://github.com/Moya/Moya&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;Moya&lt;/a&gt; 來輔助我做 refresh 機制，他的 &lt;a href=&quot;https://github.com/Moya/Moya/blob/master/docs/Plugins.md&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;plugin 機制&lt;/a&gt;允許我們對一個 request 做預處理或後處理（pre/post process），這樣的好處在於，如果我的 api call 拿到 401 403 等錯誤後，我馬上能觸發 refresh 機制，並且同時 suspend request thread 暫停所有的 api call。&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;swift&quot;&gt;&lt;pre class=&quot;language-swift&quot;&gt;&lt;code class=&quot;language-swift&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;didReceive&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;_&lt;/span&gt; result&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token builtin&quot;&gt;Result&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;token builtin&quot;&gt;Moya&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token builtin&quot;&gt;Response&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token builtin&quot;&gt;MoyaError&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; target&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token builtin&quot;&gt;TargetType&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;token comment&quot;&gt;// check 401 403 here&lt;/span&gt;
+&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;hr&gt;
+&lt;p&gt;參考資料：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/Moya/Moya/blob/master/docs/Authentication.md#oauth&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;Moya OAuth&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/trivago/Heimdallr.swift&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;Trivago Heimdallr&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+                &lt;div style=&quot;margin-top=55px; font-style: italic;&quot;&gt;(This is an article posted to my blog at yoxisem544.github.io. You can read it online by &lt;a href=&quot;https://yoxisem544.github.io/lets-talk-about-oauth-refresh-token/&quot;&gt;clicking here&lt;/a&gt;.)&lt;/div&gt;
+              </content:encoded></item><item><title><![CDATA[Testing File]]></title><description><![CDATA[🚕🚕🚕🚕🚕🚕🚕🚕]]></description><link>https://yoxisem544.github.io/testing-file/</link><guid isPermaLink="false">https://yoxisem544.github.io/testing-file/</guid><pubDate>Fri, 30 Aug 2019 00:00:00 GMT</pubDate><content:encoded>&lt;p&gt;How to solve: &lt;a href=&quot;https://blog.oisulab.com/maybe-absolute-links/&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;https://blog.oisulab.com/maybe-absolute-links/&lt;/a&gt;&lt;/p&gt;
 &lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;text&quot;&gt;&lt;pre class=&quot;language-text&quot;&gt;&lt;code class=&quot;language-text&quot;&gt;[ { GraphQLError: Cannot query field &amp;quot;maybeAbsoluteLinks&amp;quot; on type &amp;quot;fields_4&amp;quot;.
       at Object.Field (/Users/David/Desktop/overreacted.io/node_modules/graphql/validation/rules/FieldsOnCorrectType.js:65:31)
       at Object.enter (/Users/David/Desktop/overreacted.io/node_modules/graphql/language/visitor.js:324:29)
