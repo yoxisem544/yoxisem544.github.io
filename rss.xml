@@ -1,4 +1,488 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[David's Hello Swift! Blog RSS Feed]]></title><description><![CDATA[Personal blog by David Lin. I write something about Swift.]]></description><link>https://yoxisem544.github.io</link><generator>GatsbyJS</generator><lastBuildDate>Mon, 09 Sep 2019 14:51:51 GMT</lastBuildDate><item><title><![CDATA[How to implement exponential retry?]]></title><description><![CDATA[Ways PromiseKit and RxSwift provided don't always fits our need]]></description><link>https://yoxisem544.github.io/exponential-retry/</link><guid isPermaLink="false">https://yoxisem544.github.io/exponential-retry/</guid><pubDate>Mon, 09 Sep 2019 00:00:00 GMT</pubDate><content:encoded>&lt;p&gt;Sometimes, errors occur in real world application. For example, api sometimes failed due to network issue, server issue or awkward network condition. In such cases, we would like to retry several times before throwing an error out.&lt;/p&gt;
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[David's Hello Swift! Blog RSS Feed]]></title><description><![CDATA[Personal blog by David Lin. I write something about Swift.]]></description><link>https://yoxisem544.github.io</link><generator>GatsbyJS</generator><lastBuildDate>Mon, 23 Sep 2019 06:30:49 GMT</lastBuildDate><item><title><![CDATA[Run Your iOS Project Using Fastlane on Jenkins]]></title><description><![CDATA[git push, then go for a coffee.]]></description><link>https://yoxisem544.github.io/run-your-ios-project-using-fastlane-on-jenkins/</link><guid isPermaLink="false">https://yoxisem544.github.io/run-your-ios-project-using-fastlane-on-jenkins/</guid><pubDate>Fri, 20 Sep 2019 00:00:00 GMT</pubDate><content:encoded>&lt;h1 id=&quot;homebrew&quot;&gt;&lt;a href=&quot;#homebrew&quot; aria-hidden class=&quot;anchor&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;Homebrew&lt;/h1&gt;
+&lt;p&gt;&lt;a href=&quot;https://brew.sh/index_zh-tw&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;Homebrew&lt;/a&gt; 是一個類似於 apt-get 且屬於 macOS 的套件管理工具，等等我們會使用 Homebrew 來安裝 Jenkins。&lt;/p&gt;
+&lt;h3 id=&quot;安裝-homebrew&quot;&gt;&lt;a href=&quot;#%E5%AE%89%E8%A3%9D-homebrew&quot; aria-hidden class=&quot;anchor&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;安裝 Homebrew&lt;/h3&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;$ /usr/bin/ruby -e &lt;span class=&quot;token string&quot;&gt;&quot;&lt;span class=&quot;token variable&quot;&gt;&lt;span class=&quot;token variable&quot;&gt;$(&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;curl&lt;/span&gt; -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install&lt;span class=&quot;token variable&quot;&gt;)&lt;/span&gt;&lt;/span&gt;&quot;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;h1 id=&quot;rvm&quot;&gt;&lt;a href=&quot;#rvm&quot; aria-hidden class=&quot;anchor&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;rvm&lt;/h1&gt;
+&lt;p&gt;rvm 是用來管理電腦上 ruby 的工具（如果你想要用系統 ruby 或者其他管理 ruby 的工具可以自行安裝）&lt;/p&gt;
+&lt;p&gt;rvm: &lt;a href=&quot;https://rvm.io/&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;https://rvm.io/&lt;/a&gt;&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;\&lt;/span&gt;curl -sSL https://get.rvm.io &lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;bash&lt;/span&gt; -s stable&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;h1 id=&quot;fastlane-設定&quot;&gt;&lt;a href=&quot;#fastlane-%E8%A8%AD%E5%AE%9A&quot; aria-hidden class=&quot;anchor&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;Fastlane 設定&lt;/h1&gt;
+&lt;p&gt;可以參考：
+&lt;a href=&quot;https://medium.com/@davidlin_98861/fastlane-gitlab-bitrise-on-ios-6275bdf929be&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;Fastlane + GitLab + Bitrise on iOS&lt;/a&gt;&lt;/p&gt;
+&lt;h1 id=&quot;jenkins&quot;&gt;&lt;a href=&quot;#jenkins&quot; aria-hidden class=&quot;anchor&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;Jenkins&lt;/h1&gt;
+&lt;h2 id=&quot;安裝-jenkins&quot;&gt;&lt;a href=&quot;#%E5%AE%89%E8%A3%9D-jenkins&quot; aria-hidden class=&quot;anchor&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;安裝 Jenkins&lt;/h2&gt;
+&lt;p&gt;這邊我們有兩個方式可以把 Jenkins 安裝到 Mac 上，一個是透過 Jenkins 官方下載的 &lt;code class=&quot;language-text&quot;&gt;.pkg&lt;/code&gt; 檔案安裝，二是透過 Homebrew 安裝。&lt;/p&gt;
+&lt;p&gt;兩者最大的差異是使用 &lt;code class=&quot;language-text&quot;&gt;.pkg&lt;/code&gt; 安裝的話，他會在 &lt;code class=&quot;language-text&quot;&gt;/Users/Shared/&lt;/code&gt; 的路徑底下再新建一個叫做 &lt;code class=&quot;language-text&quot;&gt;Jenkins&lt;/code&gt; 的使用者，這會使你的電腦多增加一個使用者，再加上他的裝載點是在 &lt;code class=&quot;language-text&quot;&gt;/Users&lt;/code&gt; 底下，因此會抓不到 rvm。&lt;/p&gt;
+&lt;p&gt;如果使用 &lt;code class=&quot;language-text&quot;&gt;Homebrew&lt;/code&gt; 安裝的話，他會在你的家目錄建立一個檔案： &lt;code class=&quot;language-text&quot;&gt;/Users/&amp;lt;YOUR_USER&amp;gt;/.jenkins&lt;/code&gt;，這樣的好處是 jenkins 可以觸及 rvm 裡面安裝的 ruby。（還有路徑上的問題也會少很多，有興趣者可以參考 &lt;a href=&quot;https://www.ifeegoo.com/using-jenkins-to-set-up-the-continuous-integration-environment-of-android-and-ios-on-macos.html&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;macOS 上使用 Jenkins 搭建 Android/iOS 持续集成环境&lt;/a&gt;）&lt;/p&gt;
+&lt;p&gt;我們可以透過以下指令來安裝 Jenkins：&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;$ brew &lt;span class=&quot;token function&quot;&gt;install&lt;/span&gt; jenkins&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;或者你想要安裝穩定版本的 Jenkins：&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;$ brew &lt;span class=&quot;token function&quot;&gt;install&lt;/span&gt; jenkins-lts&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;安裝成功的話會有以下結果：&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;shell&quot;&gt;&lt;pre class=&quot;language-shell&quot;&gt;&lt;code class=&quot;language-shell&quot;&gt;$ brew &lt;span class=&quot;token function&quot;&gt;install&lt;/span&gt; jenkins
+&lt;span class=&quot;token operator&quot;&gt;==&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; Downloading http://mirrors.jenkins.io/war/2.195/jenkins.war
+Already downloaded: /Users/David/Library/Caches/Homebrew/downloads/b929ae9e89a6083706dcec80dd42fb9abac3f571e3293ea724e091df4fe58348--jenkins.war
+&lt;span class=&quot;token operator&quot;&gt;==&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; jar xvf jenkins.war
+&lt;span class=&quot;token operator&quot;&gt;==&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; Caveats
+Note: When using launchctl the port will be &lt;span class=&quot;token number&quot;&gt;8080&lt;/span&gt;.
+
+To have launchd start jenkins now and restart at login:
+ brew services start jenkins
+Or, &lt;span class=&quot;token keyword&quot;&gt;if&lt;/span&gt; you &lt;span class=&quot;token keyword&quot;&gt;do&lt;/span&gt; not want/need a background &lt;span class=&quot;token function&quot;&gt;service&lt;/span&gt; you can just run:
+ jenkins
+&lt;span class=&quot;token operator&quot;&gt;==&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; Summary
+🍺  /usr/local/Cellar/jenkins/2.195: &lt;span class=&quot;token number&quot;&gt;7&lt;/span&gt; files, &lt;span class=&quot;token number&quot;&gt;78&lt;/span&gt;.2MB, built &lt;span class=&quot;token keyword&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;6&lt;/span&gt; seconds&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;h2 id=&quot;啟動-jenkins&quot;&gt;&lt;a href=&quot;#%E5%95%9F%E5%8B%95-jenkins&quot; aria-hidden class=&quot;anchor&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;啟動 Jenkins&lt;/h2&gt;
+&lt;p&gt;使用 &lt;code class=&quot;language-text&quot;&gt;brew services start&lt;/code&gt; 可以啟動安裝在 Homebrew 底下的一些服務，要啟動 Jenkins 的話可以這樣做：&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;$ brew services start jenkins &lt;span class=&quot;token comment&quot;&gt;# or jenkins-lts&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;要停止服務的話：&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;$ brew services stop jenkins &lt;span class=&quot;token comment&quot;&gt;# or jenkins-lts&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;接著就可以連線到 Jenkins 囉：&lt;a href=&quot;http://localhost:8080&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;http://localhost:8080&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&quot;設定-jenkins&quot;&gt;&lt;a href=&quot;#%E8%A8%AD%E5%AE%9A-jenkins&quot; aria-hidden class=&quot;anchor&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;設定 Jenkins&lt;/h2&gt;
+&lt;p&gt;
+  &lt;a
+    class=&quot;gatsby-resp-image-link&quot;
+    href=&quot;https://yoxisem544.github.io/static/ef28844ea50ea4a30d6e8868c108e728/adb17/jenkins-initial.png&quot;
+    style=&quot;display: block&quot;
+    target=&quot;_blank&quot;
+    rel=&quot;noopener&quot;
+  &gt;
+  
+  &lt;span
+    class=&quot;gatsby-resp-image-wrapper&quot;
+    style=&quot;position: relative; display: block;  max-width: 590px; margin-left: auto; margin-right: auto;&quot;
+  &gt;
+    &lt;span
+      class=&quot;gatsby-resp-image-background-image&quot;
+      style=&quot;padding-bottom: 103.91498881431767%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAVCAYAAABG1c6oAAAACXBIWXMAAAsSAAALEgHS3X78AAACCklEQVQ4y6WVzY7aMBSFef9ld32JPkAXXVStKjqliyJNKiAgAlNCAs7/L4HTe8w4zQwThlEtHdlx7C/nXl/DwLIsLBYL2LYNx3EQRRHCMLwQ5/vE90mSYLVaYTCdTlGWpda1djqdenU8HvUaz/MwmEwmelIpBcLpcrPZYLvdYrlcYj6f63Fd1zgcDr0iw3Xds0M2QobDIUajEZiG36Ifd3f4LnPW/T3KotDQqqpaOHsj7XArDmezmX7Isgyh5COWXATMG3OTpEjyEipK4KsQ3l7B83244tiXniHSPfPXhmyAVZYj2ynkuwBFECEXQCLjeBeKIqT7WN6HKGWeaxvJG3Nnwm2B9szWD6UsSlWAXGCZhimBKBkHuk92eyT+HqnMZ1GMPM+1zIFdOGSoG3ejw1FBgFJyRVXMm6is/z0Xj1VB0eVTh/bZIa3rhIsOsun4GNJrappG770Amq/cUncvrX0R2Lfh+Ua2rrObgH2u2BdSkywViuVGeC/w2rVjIyyO4xZooDcDu/M8BG42JcMxlaapXsNivwrshmmALBVC6JRQwjh+k0PTjEOGTBjLjAfz5NfmlkNh4w+ACY+g7od6T7mv0QFBPADCWlD7/jzadq/eazeCIALrZ7eoaY7tB4J951D+p1kPEd5/svHll43BeDzGer3W/wdvleOs4P55wOeRhXcfvuHj15/4C/TJWS2jqJc+AAAAAElFTkSuQmCC&apos;); background-size: cover; display: block;&quot;
+    &gt;
+      &lt;img
+        class=&quot;gatsby-resp-image-image&quot;
+        style=&quot;width: 100%; height: 100%; margin: 0; vertical-align: middle; position: absolute; top: 0; left: 0; box-shadow: inset 0px 0px 0px 400px white;&quot;
+        alt=&quot;initial-jenkins&quot;
+        title=&quot;&quot;
+        src=&quot;https://yoxisem544.github.io/static/ef28844ea50ea4a30d6e8868c108e728/b9e4f/jenkins-initial.png&quot;
+        srcset=&quot;https://yoxisem544.github.io/static/ef28844ea50ea4a30d6e8868c108e728/cf440/jenkins-initial.png 148w,https://yoxisem544.github.io/static/ef28844ea50ea4a30d6e8868c108e728/d2d38/jenkins-initial.png 295w,https://yoxisem544.github.io/static/ef28844ea50ea4a30d6e8868c108e728/b9e4f/jenkins-initial.png 590w,https://yoxisem544.github.io/static/ef28844ea50ea4a30d6e8868c108e728/f9b6a/jenkins-initial.png 885w,https://yoxisem544.github.io/static/ef28844ea50ea4a30d6e8868c108e728/adb17/jenkins-initial.png 894w&quot;
+        sizes=&quot;(max-width: 590px) 100vw, 590px&quot;
+      /&gt;
+    &lt;/span&gt;
+  &lt;/span&gt;
+  
+  &lt;/a&gt;
+    
+連進 Jenkins 的第一個畫面話詢問你密碼，主要是想要確認你有沒有 sudo 的權限，我們可以在 terminal 裡面把密碼找出來：&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;$ &lt;span class=&quot;token function&quot;&gt;sudo&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;cat&lt;/span&gt; /Users/&lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;YOUR_NAME&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt;/.jenkins/secrets/initialAdminPassword
+17cab4eac7504be287dfd7dd345d85d5&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;再使用這組密碼登入 Jenkins 即可。&lt;/p&gt;
+&lt;p&gt;輸入密碼後你會看到這個畫面：&lt;/p&gt;
+&lt;p&gt;
+  &lt;a
+    class=&quot;gatsby-resp-image-link&quot;
+    href=&quot;https://yoxisem544.github.io/static/a9f92882b75ccb63316a4835daa40f0e/194a3/jenkins-proxy.png&quot;
+    style=&quot;display: block&quot;
+    target=&quot;_blank&quot;
+    rel=&quot;noopener&quot;
+  &gt;
+  
+  &lt;span
+    class=&quot;gatsby-resp-image-wrapper&quot;
+    style=&quot;position: relative; display: block;  max-width: 590px; margin-left: auto; margin-right: auto;&quot;
+  &gt;
+    &lt;span
+      class=&quot;gatsby-resp-image-background-image&quot;
+      style=&quot;padding-bottom: 104.85327313769753%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAVCAYAAABG1c6oAAAACXBIWXMAAAsSAAALEgHS3X78AAABeElEQVQ4y9VUTU+DQBTc//8T9GKidw968WJiYtT4cTDpoSDs8tFCDy2laRMKuzD2bVMKlULFk5NM2JDd2dmdfY+ZponRaATHcTCZTLBarWpcLBadjOMYy+USnAswwzAQBAHCMMR0OkU8jzGbzfQkYp7nKIqilTSHQMbYYDDQg/F4rF3SmFxzm8N1XazXa2RZhjRN9fcYlVLgwgHjnJcumiCl7KRSEmkmMTTtrSC5SJKknLDbdb9AdTKVCsYXBxNCaDE60ikLm7nZWOWwuLMVpDQppb6CdApCsMmBeZ5X3tWxe2zDPmnAssVekIJpIzlp+l+FcNy6YFuSu2dTT1chiiJYloX5PNJPrxTsc1wCvRCqFtpMP+yqw66KaGIVPwR/G8RuXCu9PoJNG/xTwT6hVO+zJtivSgCVF7qOCb7vg1HPIxyrhDbiwEQY/PEOE5nj+s3HxYONy0cXz5/mtmNTp6auQ5ZPpbfh0BK4unvH2c0Lzm9fcf/0gW+h42Iqa3/a/AAAAABJRU5ErkJggg==&apos;); background-size: cover; display: block;&quot;
+    &gt;
+      &lt;img
+        class=&quot;gatsby-resp-image-image&quot;
+        style=&quot;width: 100%; height: 100%; margin: 0; vertical-align: middle; position: absolute; top: 0; left: 0; box-shadow: inset 0px 0px 0px 400px white;&quot;
+        alt=&quot;proxy&quot;
+        title=&quot;&quot;
+        src=&quot;https://yoxisem544.github.io/static/a9f92882b75ccb63316a4835daa40f0e/b9e4f/jenkins-proxy.png&quot;
+        srcset=&quot;https://yoxisem544.github.io/static/a9f92882b75ccb63316a4835daa40f0e/cf440/jenkins-proxy.png 148w,https://yoxisem544.github.io/static/a9f92882b75ccb63316a4835daa40f0e/d2d38/jenkins-proxy.png 295w,https://yoxisem544.github.io/static/a9f92882b75ccb63316a4835daa40f0e/b9e4f/jenkins-proxy.png 590w,https://yoxisem544.github.io/static/a9f92882b75ccb63316a4835daa40f0e/f9b6a/jenkins-proxy.png 885w,https://yoxisem544.github.io/static/a9f92882b75ccb63316a4835daa40f0e/194a3/jenkins-proxy.png 886w&quot;
+        sizes=&quot;(max-width: 590px) 100vw, 590px&quot;
+      /&gt;
+    &lt;/span&gt;
+  &lt;/span&gt;
+  
+  &lt;/a&gt;
+    &lt;/p&gt;
+&lt;p&gt;你可以只先輸入 user name 跟 password，這將是你等等進入 jenkins 的第一組帳號密碼。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;如果你一直卡在 &lt;code class=&quot;language-text&quot;&gt;Offline. This Jenkins instance appears to be offline.&lt;/code&gt; 畫面，且還沒有要 host 到某台主機上，只是要本機端測試，你可以參考這個解決方案：&lt;a href=&quot;https://stackoverflow.com/questions/42408703/why-does-jenkins-say-this-jenkins-instance-appears-to-be-offline&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;https://stackoverflow.com/questions/42408703/why-does-jenkins-say-this-jenkins-instance-appears-to-be-offline&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;修改 &lt;code class=&quot;language-text&quot;&gt;/Users/&amp;lt;YOUR_NAME&amp;gt;/.jenkins/hudson.model.UpdateCenter.xml&lt;/code&gt; 檔案，把原本使用 &lt;code class=&quot;language-text&quot;&gt;https&lt;/code&gt; url 改成 &lt;code class=&quot;language-text&quot;&gt;http&lt;/code&gt; 即可。要記得重新啟動 Jenkins：&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;$ brew &lt;span class=&quot;token function&quot;&gt;service&lt;/span&gt; restart jenkins&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&quot;安裝-jenkins-plugins&quot;&gt;&lt;a href=&quot;#%E5%AE%89%E8%A3%9D-jenkins-plugins&quot; aria-hidden class=&quot;anchor&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;安裝 Jenkins Plugins&lt;/h2&gt;
+&lt;p&gt;接著可以安裝一些輔助插件，讓 Jenkins 功能更加齊全：&lt;/p&gt;
+&lt;p&gt;
+  &lt;a
+    class=&quot;gatsby-resp-image-link&quot;
+    href=&quot;https://yoxisem544.github.io/static/a0a6dcf5598f134da9cf2c4e30527647/adb17/jenkins-plugins.png&quot;
+    style=&quot;display: block&quot;
+    target=&quot;_blank&quot;
+    rel=&quot;noopener&quot;
+  &gt;
+  
+  &lt;span
+    class=&quot;gatsby-resp-image-wrapper&quot;
+    style=&quot;position: relative; display: block;  max-width: 590px; margin-left: auto; margin-right: auto;&quot;
+  &gt;
+    &lt;span
+      class=&quot;gatsby-resp-image-background-image&quot;
+      style=&quot;padding-bottom: 104.02684563758389%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAVCAYAAABG1c6oAAAACXBIWXMAAAsSAAALEgHS3X78AAACP0lEQVQ4y6VU144aQRDk/7/Cr/4FP1kmGLCE7sGGI7PALhvYnJdQnppjEEe4w3JLxYRlarqru6c2GAygaRqm0ylWqxU8z4PrunJU4Pp67xq+70uOGn/yPEeSJNjv9vjMjsfjwz1d11GbTCZysd1uYVmWhOM4sG0bQRDIfcMw5H4cx9jtdjeoqgrHwxHr9frNQxrDbXc6aDab6Ha7aDQaoBy9Xg/1eh2tVgvD4VASFEWBsiwlOCfh2cPZbCYXYRhKnRi+QpZlSNP0vKYsBP/LkR5zzm80RlKbz+dywdt2VflQp2fsHWGUVxhbAVZegqDYwcsquAKB2N8KzxmOYWygi0O+0DZnqCJ82uFwuCW04xxfvr/ga+sPXq0QVlpBjws4glTTllJDlheJfd8TUmQoT9qpiN4RmlGGb78X+DFcY7KNsfBTLIIcepjKbBNKN+oaiZEyPSQ0xMGfMxOduYnm2EBbzF+dCKsgleUwGo1k4Y7H43MDFCfCuyFrXoz6RBAubLTnFn5pDl6MABMnxGazwXK5lNB1Q9Qpa9ZGKqrgoYdJUcJLCwRZKeELuEmBSIx5Xsgk0KNMlAiT4rqeKJlIlsxdD8U9T5UGCzmhjqeajKJI1usNIW+h649A2+/3koRJuQQTdUN4efC66dXIS1UHKahOeorwel95SI9Ipvr4roafhcuD9IaErL/Ly+9m+aP+pWf0ilAvyz1pbpLyERieeg+vv/HC8/N1Sfi/Jj3s9/tywvZSL/a/wjRN+cqzPf8C2KdNtEgbvCgAAAAASUVORK5CYII=&apos;); background-size: cover; display: block;&quot;
+    &gt;
+      &lt;img
+        class=&quot;gatsby-resp-image-image&quot;
+        style=&quot;width: 100%; height: 100%; margin: 0; vertical-align: middle; position: absolute; top: 0; left: 0; box-shadow: inset 0px 0px 0px 400px white;&quot;
+        alt=&quot;plugins&quot;
+        title=&quot;&quot;
+        src=&quot;https://yoxisem544.github.io/static/a0a6dcf5598f134da9cf2c4e30527647/b9e4f/jenkins-plugins.png&quot;
+        srcset=&quot;https://yoxisem544.github.io/static/a0a6dcf5598f134da9cf2c4e30527647/cf440/jenkins-plugins.png 148w,https://yoxisem544.github.io/static/a0a6dcf5598f134da9cf2c4e30527647/d2d38/jenkins-plugins.png 295w,https://yoxisem544.github.io/static/a0a6dcf5598f134da9cf2c4e30527647/b9e4f/jenkins-plugins.png 590w,https://yoxisem544.github.io/static/a0a6dcf5598f134da9cf2c4e30527647/f9b6a/jenkins-plugins.png 885w,https://yoxisem544.github.io/static/a0a6dcf5598f134da9cf2c4e30527647/adb17/jenkins-plugins.png 894w&quot;
+        sizes=&quot;(max-width: 590px) 100vw, 590px&quot;
+      /&gt;
+    &lt;/span&gt;
+  &lt;/span&gt;
+  
+  &lt;/a&gt;
+    &lt;/p&gt;
+&lt;p&gt;選擇推薦的插件安裝：&lt;/p&gt;
+&lt;p&gt;
+  &lt;a
+    class=&quot;gatsby-resp-image-link&quot;
+    href=&quot;https://yoxisem544.github.io/static/73d53c4f4ab1a9348b28bb64a43375e9/47573/jenkins-install-plugins.png&quot;
+    style=&quot;display: block&quot;
+    target=&quot;_blank&quot;
+    rel=&quot;noopener&quot;
+  &gt;
+  
+  &lt;span
+    class=&quot;gatsby-resp-image-wrapper&quot;
+    style=&quot;position: relative; display: block;  max-width: 590px; margin-left: auto; margin-right: auto;&quot;
+  &gt;
+    &lt;span
+      class=&quot;gatsby-resp-image-background-image&quot;
+      style=&quot;padding-bottom: 105.45454545454544%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAVCAYAAABG1c6oAAAACXBIWXMAAAsSAAALEgHS3X78AAACMElEQVQ4y51Uaa+iQBDk//+f9xM22bxvm7yVQ+MBCggMh6gcHvWmGseoydN1SSo6Q091dXcxluu6mM/nmEwmCMMQZVmiKIq3kOc5NpsNZrMZrMVigb7vsd/vcTwewed8Pr/E7WPWq9UKlu/7qMoCq2UgG0EQCDmTdF13Bdc/ge9JyrNWHIX4ZYf4+O2gyBWUUmibdgju+jtis/eYhP9vFC5QNz3KbYvT6Shld32Htm3RdgOuB9uB5HA4CAwZY/ksl0tYn1+f+Ar+wIsdeImn4cLVcCJH4MYuZvkMvm4Jm87BpWmK5IIoihDHsbRpOp3C+uuM4Ic+5ss5kjzBWq2Rlpn8xlmMoi50BTUifUipTFqSZZme7DDhut6IQirmgC3bcRGFEbI00z3UFlC5DiyhMiWoygrNvoHvBxiPx9J4qqRVSJpplVRMUtrPGtk20mzIbEBCqqjrWgJ3upyVJlnoAzzMGCHUChlH0L/0smXbjmSkfdgPk5kBTdMMhLudlBwEvsQaQnUxtLGZGNvWCtfrtQSaBnOdJMkd+M6AMY9xTMKvTgjTy7T+FxRD8tFoBIusJGQJ7BlLqKpKfgnuvYIpW2zDyZmSKZ3E2+1WwN4Z4z4De80PQmzDyTCDaTRJHoNfgequPqR3TqeTHDZqboNv188U3hFywSz/ouYn3BGy/mcK3uohJ8NNMzEzjHfAM2yXGJvfpinZOJ49fQfmppfry/M8sU0st4m63ibvgjcPLfgNj4I++KkEDHEAAAAASUVORK5CYII=&apos;); background-size: cover; display: block;&quot;
+    &gt;
+      &lt;img
+        class=&quot;gatsby-resp-image-image&quot;
+        style=&quot;width: 100%; height: 100%; margin: 0; vertical-align: middle; position: absolute; top: 0; left: 0; box-shadow: inset 0px 0px 0px 400px white;&quot;
+        alt=&quot;install-plugins&quot;
+        title=&quot;&quot;
+        src=&quot;https://yoxisem544.github.io/static/73d53c4f4ab1a9348b28bb64a43375e9/b9e4f/jenkins-install-plugins.png&quot;
+        srcset=&quot;https://yoxisem544.github.io/static/73d53c4f4ab1a9348b28bb64a43375e9/cf440/jenkins-install-plugins.png 148w,https://yoxisem544.github.io/static/73d53c4f4ab1a9348b28bb64a43375e9/d2d38/jenkins-install-plugins.png 295w,https://yoxisem544.github.io/static/73d53c4f4ab1a9348b28bb64a43375e9/b9e4f/jenkins-install-plugins.png 590w,https://yoxisem544.github.io/static/73d53c4f4ab1a9348b28bb64a43375e9/47573/jenkins-install-plugins.png 880w&quot;
+        sizes=&quot;(max-width: 590px) 100vw, 590px&quot;
+      /&gt;
+    &lt;/span&gt;
+  &lt;/span&gt;
+  
+  &lt;/a&gt;
+    &lt;/p&gt;
+&lt;h2 id=&quot;走完剩下的步驟&quot;&gt;&lt;a href=&quot;#%E8%B5%B0%E5%AE%8C%E5%89%A9%E4%B8%8B%E7%9A%84%E6%AD%A5%E9%A9%9F&quot; aria-hidden class=&quot;anchor&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;走完剩下的步驟&lt;/h2&gt;
+&lt;p&gt;接著建一個使用者：&lt;/p&gt;
+&lt;p&gt;
+  &lt;a
+    class=&quot;gatsby-resp-image-link&quot;
+    href=&quot;https://yoxisem544.github.io/static/ff5d86525c8435b0d834e367ee39ab12/92cc8/jenkins-first-admin.png&quot;
+    style=&quot;display: block&quot;
+    target=&quot;_blank&quot;
+    rel=&quot;noopener&quot;
+  &gt;
+  
+  &lt;span
+    class=&quot;gatsby-resp-image-wrapper&quot;
+    style=&quot;position: relative; display: block;  max-width: 590px; margin-left: auto; margin-right: auto;&quot;
+  &gt;
+    &lt;span
+      class=&quot;gatsby-resp-image-background-image&quot;
+      style=&quot;padding-bottom: 106.07101947308134%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAVCAYAAABG1c6oAAAACXBIWXMAAAsSAAALEgHS3X78AAABlUlEQVQ4y+2VyW7CMBRF89lVf6W7Sl31D7rpFggbgkqFgoAQJoUkODOZfOvnNmkYigqsKvVJV7af7OP7YstRhsMhZrMZxuMx5vM5bNvGZrP5lr3ZH3+J5jXlui5M04QymUwQRRG22y3yPMctQQzFMAw5iONYOl2tVlgul6D8YrGAZVkwplPpnvIkmsMYkwayLJPinEunNZBc9vt9dLtdqKoKXR9B0zQMBgP0eho6nY5oeyKvo91uy/IoiqKQoqCyFXJFQbsEQSh6HElaYmXHCHYAiylzOshVpbrk5k6O6/IkSRDGGXf8rGRhwd0gR5oVnBaVZXkEqcA1kL5NBfQ8D2EY8t1ut+/ja0ETdqiTQJGQDtM0jUW/Lw7KJ7hwxpvAU6UfAakcAeJ0cqIfiFRLHJRLp98E/vQtj4CNyYerzsLOOuSfUbVlc3yLw4vjH/iXgJdKXjfRFuLK1a/NwT28ClqF77HrSqap1XTTifA+Z9DXIUbmGgr9S+iVofrpkf2NLNfD2mZwmI+HlzfcPbZw/6Ti+VXDB0OhZDhbQEOkAAAAAElFTkSuQmCC&apos;); background-size: cover; display: block;&quot;
+    &gt;
+      &lt;img
+        class=&quot;gatsby-resp-image-image&quot;
+        style=&quot;width: 100%; height: 100%; margin: 0; vertical-align: middle; position: absolute; top: 0; left: 0; box-shadow: inset 0px 0px 0px 400px white;&quot;
+        alt=&quot;admin&quot;
+        title=&quot;&quot;
+        src=&quot;https://yoxisem544.github.io/static/ff5d86525c8435b0d834e367ee39ab12/b9e4f/jenkins-first-admin.png&quot;
+        srcset=&quot;https://yoxisem544.github.io/static/ff5d86525c8435b0d834e367ee39ab12/cf440/jenkins-first-admin.png 148w,https://yoxisem544.github.io/static/ff5d86525c8435b0d834e367ee39ab12/d2d38/jenkins-first-admin.png 295w,https://yoxisem544.github.io/static/ff5d86525c8435b0d834e367ee39ab12/b9e4f/jenkins-first-admin.png 590w,https://yoxisem544.github.io/static/ff5d86525c8435b0d834e367ee39ab12/92cc8/jenkins-first-admin.png 873w&quot;
+        sizes=&quot;(max-width: 590px) 100vw, 590px&quot;
+      /&gt;
+    &lt;/span&gt;
+  &lt;/span&gt;
+  
+  &lt;/a&gt;
+    &lt;/p&gt;
+&lt;p&gt;設定暫時性的網址：&lt;/p&gt;
+&lt;p&gt;
+  &lt;a
+    class=&quot;gatsby-resp-image-link&quot;
+    href=&quot;https://yoxisem544.github.io/static/367e53e5ae816e5c0932f2d9ca54ee3e/b2bce/jenkins-url.png&quot;
+    style=&quot;display: block&quot;
+    target=&quot;_blank&quot;
+    rel=&quot;noopener&quot;
+  &gt;
+  
+  &lt;span
+    class=&quot;gatsby-resp-image-wrapper&quot;
+    style=&quot;position: relative; display: block;  max-width: 590px; margin-left: auto; margin-right: auto;&quot;
+  &gt;
+    &lt;span
+      class=&quot;gatsby-resp-image-background-image&quot;
+      style=&quot;padding-bottom: 105.66251415628538%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAVCAYAAABG1c6oAAAACXBIWXMAAAsSAAALEgHS3X78AAABiUlEQVQ4y+1UTU/CQBDlt3vxx3jw7NFokKBYEokkWkshUKC0CP2gpZQ++6YuYBQhgDcnednZ6fTNm213Ss1mE51OB61WS9Z+v78XBoPBCtwPh0Pouo6SYRjwPR+O4yCOYxxjJBdCWhRFsG1bKhHj8Vgq27nf7Xbhug5Go5HEXNfFfD5HkiQC+svlUvJKbJUWhiFqtRoqlYpA0zS86m94qD2iXL7D9fUNqtWqoF6vCxFJiDRNhcOyLJRM05TNYrEQUlZT1nMiGJYHozdF244RJuv2FFmWZQIa1a8IWSUIAvi+L8T0PT/AdOphMpnm8SCPFXFiNptJHs/9C2G73V5V5EOCyUS0sbLFNO+ChdXKroithJ7nCZQKqi1ivuypSKlX4BH9qpAVaepsdkHl/kh4iH37KJuE+6rapvQkCk/e8j/hHxMe+sukn2Jk2ihCVeUYs4eD9bTZnG+7kGWcgYVvjUPc6yNo5jsaL61iYvOC89KrCbwLvO+zeJ6/l+D2uY+zCw3nl0+4qjTwATNmYArdshDiAAAAAElFTkSuQmCC&apos;); background-size: cover; display: block;&quot;
+    &gt;
+      &lt;img
+        class=&quot;gatsby-resp-image-image&quot;
+        style=&quot;width: 100%; height: 100%; margin: 0; vertical-align: middle; position: absolute; top: 0; left: 0; box-shadow: inset 0px 0px 0px 400px white;&quot;
+        alt=&quot;url&quot;
+        title=&quot;&quot;
+        src=&quot;https://yoxisem544.github.io/static/367e53e5ae816e5c0932f2d9ca54ee3e/b9e4f/jenkins-url.png&quot;
+        srcset=&quot;https://yoxisem544.github.io/static/367e53e5ae816e5c0932f2d9ca54ee3e/cf440/jenkins-url.png 148w,https://yoxisem544.github.io/static/367e53e5ae816e5c0932f2d9ca54ee3e/d2d38/jenkins-url.png 295w,https://yoxisem544.github.io/static/367e53e5ae816e5c0932f2d9ca54ee3e/b9e4f/jenkins-url.png 590w,https://yoxisem544.github.io/static/367e53e5ae816e5c0932f2d9ca54ee3e/b2bce/jenkins-url.png 883w&quot;
+        sizes=&quot;(max-width: 590px) 100vw, 590px&quot;
+      /&gt;
+    &lt;/span&gt;
+  &lt;/span&gt;
+  
+  &lt;/a&gt;
+    &lt;/p&gt;
+&lt;p&gt;好！！&lt;/p&gt;
+&lt;p&gt;
+  &lt;a
+    class=&quot;gatsby-resp-image-link&quot;
+    href=&quot;https://yoxisem544.github.io/static/efa0fd3f181f01dfe6a0a4f0c98d8a74/990db/jenkins-done.png&quot;
+    style=&quot;display: block&quot;
+    target=&quot;_blank&quot;
+    rel=&quot;noopener&quot;
+  &gt;
+  
+  &lt;span
+    class=&quot;gatsby-resp-image-wrapper&quot;
+    style=&quot;position: relative; display: block;  max-width: 590px; margin-left: auto; margin-right: auto;&quot;
+  &gt;
+    &lt;span
+      class=&quot;gatsby-resp-image-background-image&quot;
+      style=&quot;padding-bottom: 35.39325842696629%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAHCAYAAAAIy204AAAACXBIWXMAAAsSAAALEgHS3X78AAAA6ElEQVQoz5WQ206EMBCGeXZ9no13PgNp3BBNrISDC9QSQpFwuIDl0N+dcbnQdTX+yZe008nXaR3f95GmKaIogtYaXdehaZoL2ra9Cp33fY8gCOAkSYJpmjCOI/7Kuq6w1v4IhYZiIcVUFV4PBy7meY6yLFEUBZRSXKvrmoV0+cY8zwytSRqGIRx6LiV/U/AeBB69PXz5zONLKSGEgOu6MMZw37IsLP4OJY7jkzDLeKNMixf1DplV0FWH6XjEMAws2GJX++uTWZidhXcixc3uCbcn7j39KbDg5u3vruWLkP7oXL5o+g+b8AP66BhGsdq9JwAAAABJRU5ErkJggg==&apos;); background-size: cover; display: block;&quot;
+    &gt;
+      &lt;img
+        class=&quot;gatsby-resp-image-image&quot;
+        style=&quot;width: 100%; height: 100%; margin: 0; vertical-align: middle; position: absolute; top: 0; left: 0; box-shadow: inset 0px 0px 0px 400px white;&quot;
+        alt=&quot;done&quot;
+        title=&quot;&quot;
+        src=&quot;https://yoxisem544.github.io/static/efa0fd3f181f01dfe6a0a4f0c98d8a74/b9e4f/jenkins-done.png&quot;
+        srcset=&quot;https://yoxisem544.github.io/static/efa0fd3f181f01dfe6a0a4f0c98d8a74/cf440/jenkins-done.png 148w,https://yoxisem544.github.io/static/efa0fd3f181f01dfe6a0a4f0c98d8a74/d2d38/jenkins-done.png 295w,https://yoxisem544.github.io/static/efa0fd3f181f01dfe6a0a4f0c98d8a74/b9e4f/jenkins-done.png 590w,https://yoxisem544.github.io/static/efa0fd3f181f01dfe6a0a4f0c98d8a74/f9b6a/jenkins-done.png 885w,https://yoxisem544.github.io/static/efa0fd3f181f01dfe6a0a4f0c98d8a74/990db/jenkins-done.png 890w&quot;
+        sizes=&quot;(max-width: 590px) 100vw, 590px&quot;
+      /&gt;
+    &lt;/span&gt;
+  &lt;/span&gt;
+  
+  &lt;/a&gt;
+    &lt;/p&gt;
+&lt;h2 id=&quot;ssh-key&quot;&gt;&lt;a href=&quot;#ssh-key&quot; aria-hidden class=&quot;anchor&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;SSH key&lt;/h2&gt;
+&lt;p&gt;由於我們的 code 都會從 github SSH 來，所以必須建立一個 ssh key，建立方式請見 &lt;a href=&quot;https://confluence.atlassian.com/bitbucket/set-up-an-ssh-key-728138079.html&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;BitBucket - Set up an SSH key&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;並且交給 Jenkins 保管。&lt;/p&gt;
+&lt;h2 id=&quot;建立第一個任務&quot;&gt;&lt;a href=&quot;#%E5%BB%BA%E7%AB%8B%E7%AC%AC%E4%B8%80%E5%80%8B%E4%BB%BB%E5%8B%99&quot; aria-hidden class=&quot;anchor&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;建立第一個任務&lt;/h2&gt;
+&lt;p&gt;
+  &lt;a
+    class=&quot;gatsby-resp-image-link&quot;
+    href=&quot;https://yoxisem544.github.io/static/f3ba90f5800e585f18fdafd84a087b64/bd2e0/jenkins-first-job.png&quot;
+    style=&quot;display: block&quot;
+    target=&quot;_blank&quot;
+    rel=&quot;noopener&quot;
+  &gt;
+  
+  &lt;span
+    class=&quot;gatsby-resp-image-wrapper&quot;
+    style=&quot;position: relative; display: block;  max-width: 252px; margin-left: auto; margin-right: auto;&quot;
+  &gt;
+    &lt;span
+      class=&quot;gatsby-resp-image-background-image&quot;
+      style=&quot;padding-bottom: 85.31746031746032%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAARCAYAAADdRIy+AAAACXBIWXMAAAsSAAALEgHS3X78AAACQElEQVQ4y5WSS28SURTHJ6zU1J1lAxuiJhglBFjqwtS4cOM3aFiTENm4gIUJLkn8BsZEXZmo0dagLRaphtQ+tNaCNB3KW17TDgPyGubB3zuX1tRIBW7yz5x75tzfedzLMAyDqamzuOuahe3yRZw6fQZGoxGaX5PJZIJer4fBYPjjGyEGt2auAdwG7t2ZxcyNm/D7/XA6nXC73QgEAvD5fHC5XPB4PPB6vbDb7fSwTqcbDrxisyH86AFuX78K0/kLuGQ2w0xksVjoYYfDQW2r1Ur30+emT67ww8cQFqOf8CWyhGgkhBdzzxFcmMebt6+p5oOvqI7vF94HEV4OYSmy+I8YQEG5mkUyv4s9IuEXB0Al3i60f5o9kHJMMpE0VExX7EBWZKh9EqrK6MkixF4XPWnwnVSkQpKPQBWpAlVV0O+Drr56aEy4KLCw+hjFlfuolvbx/XMcuWQByXgKic1diF1xkIBkGkcUqHYESC1hkELRZtTXCJAlmQYdAceuMLH+EqUf7yC0ZGRLPAqVOopcYyhsFJgCw8vP8PDJUzQ7Mtgsh222hGRunxSr/gU5amskUCK3U6vz/w2cqOVUMo7YyhzSeQ7RbxlSYRGxZAlrsRy+JgrI/OSHXsyJwLpQwwFXhkJi2j3tLSrU7ogy2qKE3mHrY8+QTZWxvpVGq9GCwNXQFJqo8w10211q14iPr9boftQsKXBzK4PVNRYHFR7s9h6ybB7xjR2UcmXkyZvM7GSRJtKgYwE7TS17c6yhj2r5NxtVilHBHaeEAAAAAElFTkSuQmCC&apos;); background-size: cover; display: block;&quot;
+    &gt;
+      &lt;img
+        class=&quot;gatsby-resp-image-image&quot;
+        style=&quot;width: 100%; height: 100%; margin: 0; vertical-align: middle; position: absolute; top: 0; left: 0; box-shadow: inset 0px 0px 0px 400px white;&quot;
+        alt=&quot;first-job&quot;
+        title=&quot;&quot;
+        src=&quot;https://yoxisem544.github.io/static/f3ba90f5800e585f18fdafd84a087b64/bd2e0/jenkins-first-job.png&quot;
+        srcset=&quot;https://yoxisem544.github.io/static/f3ba90f5800e585f18fdafd84a087b64/cf440/jenkins-first-job.png 148w,https://yoxisem544.github.io/static/f3ba90f5800e585f18fdafd84a087b64/bd2e0/jenkins-first-job.png 252w&quot;
+        sizes=&quot;(max-width: 252px) 100vw, 252px&quot;
+      /&gt;
+    &lt;/span&gt;
+  &lt;/span&gt;
+  
+  &lt;/a&gt;
+    &lt;/p&gt;
+&lt;p&gt;選擇左上角的「新任務」，並且建立一個 free style project：&lt;/p&gt;
+&lt;p&gt;
+  &lt;a
+    class=&quot;gatsby-resp-image-link&quot;
+    href=&quot;https://yoxisem544.github.io/static/7e5d75eaf3b48eabf67825e95cbe91d4/364a4/jenkins-first-freestyle-job.png&quot;
+    style=&quot;display: block&quot;
+    target=&quot;_blank&quot;
+    rel=&quot;noopener&quot;
+  &gt;
+  
+  &lt;span
+    class=&quot;gatsby-resp-image-wrapper&quot;
+    style=&quot;position: relative; display: block;  max-width: 590px; margin-left: auto; margin-right: auto;&quot;
+  &gt;
+    &lt;span
+      class=&quot;gatsby-resp-image-background-image&quot;
+      style=&quot;padding-bottom: 34.30012610340479%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAHCAYAAAAIy204AAAACXBIWXMAAAsSAAALEgHS3X78AAABBElEQVQoz4WRXW+DIBSG/f+/bDde7Gbzo+0SFaxWEcQq4NJ3B1xNt3QZyZNzIuTh5RgJIdC2LbquC/WO1hrjOAZ8/x/LssCvqCgKxHGMNE2R5zmSJEGWZUGk1Cbs+z5c6Osz/J6XBqFPmGUpOGdwzsLajXmed4ZB/CkTv4WSUgip0ZNYShVSiWEgidzx36VSW733Dwg6M03XTdiQ/e39FUVZ4XA84Xj6gKZNYx0WY58yL+YHxq4B3G6IlGjQHF5wuXRgjKEoSjDOUZ/PAcZ4gNc1jaVGRWcGeoGepv2HGD8mt5KPhPJqUIqZUiYoK5rj+km3bilCGvPQ74ncdyq3v8RXv74A1gkUzP0yZMQAAAAASUVORK5CYII=&apos;); background-size: cover; display: block;&quot;
+    &gt;
+      &lt;img
+        class=&quot;gatsby-resp-image-image&quot;
+        style=&quot;width: 100%; height: 100%; margin: 0; vertical-align: middle; position: absolute; top: 0; left: 0; box-shadow: inset 0px 0px 0px 400px white;&quot;
+        alt=&quot;freestyle-job&quot;
+        title=&quot;&quot;
+        src=&quot;https://yoxisem544.github.io/static/7e5d75eaf3b48eabf67825e95cbe91d4/b9e4f/jenkins-first-freestyle-job.png&quot;
+        srcset=&quot;https://yoxisem544.github.io/static/7e5d75eaf3b48eabf67825e95cbe91d4/cf440/jenkins-first-freestyle-job.png 148w,https://yoxisem544.github.io/static/7e5d75eaf3b48eabf67825e95cbe91d4/d2d38/jenkins-first-freestyle-job.png 295w,https://yoxisem544.github.io/static/7e5d75eaf3b48eabf67825e95cbe91d4/b9e4f/jenkins-first-freestyle-job.png 590w,https://yoxisem544.github.io/static/7e5d75eaf3b48eabf67825e95cbe91d4/364a4/jenkins-first-freestyle-job.png 793w&quot;
+        sizes=&quot;(max-width: 590px) 100vw, 590px&quot;
+      /&gt;
+    &lt;/span&gt;
+  &lt;/span&gt;
+  
+  &lt;/a&gt;
+    &lt;/p&gt;
+&lt;p&gt;填上 repo 的地址：&lt;/p&gt;
+&lt;p&gt;
+  &lt;a
+    class=&quot;gatsby-resp-image-link&quot;
+    href=&quot;https://yoxisem544.github.io/static/a801cd42749e51e778047bfa75fc4b25/4dacb/jenkins-source-code.png&quot;
+    style=&quot;display: block&quot;
+    target=&quot;_blank&quot;
+    rel=&quot;noopener&quot;
+  &gt;
+  
+  &lt;span
+    class=&quot;gatsby-resp-image-wrapper&quot;
+    style=&quot;position: relative; display: block;  max-width: 590px; margin-left: auto; margin-right: auto;&quot;
+  &gt;
+    &lt;span
+      class=&quot;gatsby-resp-image-background-image&quot;
+      style=&quot;padding-bottom: 75.44757033248082%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAPCAYAAADkmO9VAAAACXBIWXMAAAsSAAALEgHS3X78AAAB50lEQVQ4y41U2W7bMBD0/39K+xMF8gEFGudBaaXCl05KlqjDlmRzusNqYyUoiggYkFwuh7MHtYF8TdPgdDohTVMcDgfs93s/0jYMA67X66cwjiM2JGxbiySJURRGUCDLMlknMMbgcrnQ0S2H3EeQZJkroUN+HpDkFW63WXB7wzzP3mmBPzxN0xvUPk0PuydsbIfClChLg67rPKy1orz1kLXr+17G/i7rSSH2++LrUhHU9QM2zjn0YizL0odIAuaU+dztdjgej4jj2HEtKOq6/iL7XzkaU5p5nhCnhRAan0dPqKr+qug8IfMYRRHyPEdVVY7jr+i3C4Jgkoun8/lMOPpytLZ5T6ghci63e8VC5CEHPKnOuU8iRhCFoSvkMq7/qZDggRWRJ+OcSgjZd9IFbvv87F5eX5EZ4+yakMqYP4LKljA88UeonSk4xjGip2/IfwawIuQqLfaOkD2ohMwhm5tgYQjaWBz6+/683dFvv2P/YwtTW4zrkPki6ESQkMS8gEo4EhqFqgzDEIEULpOWa6UG47giXB/WovASQnO7hhavEr9OFCeZefQhNzVkggr49DQ0JdYIFPqGOS+rWnwuD0IS8GfAPFEdW4Kjqvkf6NPYFoMWhTdoXvTt6lv9zF9mEr+qbtGLwj/saXlahjpVSQAAAABJRU5ErkJggg==&apos;); background-size: cover; display: block;&quot;
+    &gt;
+      &lt;img
+        class=&quot;gatsby-resp-image-image&quot;
+        style=&quot;width: 100%; height: 100%; margin: 0; vertical-align: middle; position: absolute; top: 0; left: 0; box-shadow: inset 0px 0px 0px 400px white;&quot;
+        alt=&quot;jenkins-source-code&quot;
+        title=&quot;&quot;
+        src=&quot;https://yoxisem544.github.io/static/a801cd42749e51e778047bfa75fc4b25/b9e4f/jenkins-source-code.png&quot;
+        srcset=&quot;https://yoxisem544.github.io/static/a801cd42749e51e778047bfa75fc4b25/cf440/jenkins-source-code.png 148w,https://yoxisem544.github.io/static/a801cd42749e51e778047bfa75fc4b25/d2d38/jenkins-source-code.png 295w,https://yoxisem544.github.io/static/a801cd42749e51e778047bfa75fc4b25/b9e4f/jenkins-source-code.png 590w,https://yoxisem544.github.io/static/a801cd42749e51e778047bfa75fc4b25/4dacb/jenkins-source-code.png 782w&quot;
+        sizes=&quot;(max-width: 590px) 100vw, 590px&quot;
+      /&gt;
+    &lt;/span&gt;
+  &lt;/span&gt;
+  
+  &lt;/a&gt;
+    &lt;/p&gt;
+&lt;p&gt;填好之後往下繼續會看到 Build Triggers，這裡可以設定建置排程，等等會提到。&lt;/p&gt;
+&lt;p&gt;再來我們要寫要讓這個排程執行的 shell script：&lt;/p&gt;
+&lt;p&gt;
+  &lt;a
+    class=&quot;gatsby-resp-image-link&quot;
+    href=&quot;https://yoxisem544.github.io/static/6ff4c71264136c14d88a15ac97962dc0/8efff/jenkins-script.png&quot;
+    style=&quot;display: block&quot;
+    target=&quot;_blank&quot;
+    rel=&quot;noopener&quot;
+  &gt;
+  
+  &lt;span
+    class=&quot;gatsby-resp-image-wrapper&quot;
+    style=&quot;position: relative; display: block;  max-width: 372px; margin-left: auto; margin-right: auto;&quot;
+  &gt;
+    &lt;span
+      class=&quot;gatsby-resp-image-background-image&quot;
+      style=&quot;padding-bottom: 51.88172043010753%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAKCAYAAAC0VX7mAAAACXBIWXMAAAsSAAALEgHS3X78AAABd0lEQVQoz52RW3PaMBBG+f+/pe30qS+NaZjJg2dSoC2XGgy2uRgwnoQxQb5grBNJdknaPDWaOfPtStbn3VVLSkme5+z3e+I4NmRZ9m5aVVVRliW2bWNZFp1Ox/ygKIp30fpToU60cXkpOZ/PJtaqz/4HY1gUOWEY0u326PV69Pt9o4PBgMViYVp5e7n4S99UGK5DhsMh4/EYx3EYjUZGN+GGNE2vaHOtp9NJIa4IIV4q1EmmPtKVBr6vzNeslks8b46vmM2mLAKfQDGdOGw3IfWSDXA8Json1YZQZCd+ege+/Er5eLfisx3x4W7NJ3tHeyqxnAvWpEHF7UnFrQvfFLeu5GYKzirhnIum5UzgbRLuPcHXe4+b7wHt7pIfgcCJ4PcOxg3XeCtrdpLhFpbRURlmLy2n4omqzHmII6JtyOEhbtq6KKpXLf676r3T09HMtmUSNeDHxwNCbfh+oPBxXVc9yoTZfM4uisylqpLoEb2mkrVhktSGzxWO9w+B+3OKAAAAAElFTkSuQmCC&apos;); background-size: cover; display: block;&quot;
+    &gt;
+      &lt;img
+        class=&quot;gatsby-resp-image-image&quot;
+        style=&quot;width: 100%; height: 100%; margin: 0; vertical-align: middle; position: absolute; top: 0; left: 0; box-shadow: inset 0px 0px 0px 400px white;&quot;
+        alt=&quot;jenkins-script&quot;
+        title=&quot;&quot;
+        src=&quot;https://yoxisem544.github.io/static/6ff4c71264136c14d88a15ac97962dc0/8efff/jenkins-script.png&quot;
+        srcset=&quot;https://yoxisem544.github.io/static/6ff4c71264136c14d88a15ac97962dc0/cf440/jenkins-script.png 148w,https://yoxisem544.github.io/static/6ff4c71264136c14d88a15ac97962dc0/d2d38/jenkins-script.png 295w,https://yoxisem544.github.io/static/6ff4c71264136c14d88a15ac97962dc0/8efff/jenkins-script.png 372w&quot;
+        sizes=&quot;(max-width: 372px) 100vw, 372px&quot;
+      /&gt;
+    &lt;/span&gt;
+  &lt;/span&gt;
+  
+  &lt;/a&gt;
+    &lt;/p&gt;
+&lt;p&gt;一開始先檢查 Jenkins 是否可以正確抓到 rvm 跟 bundler，並且一併把某個 feature branch 的資料 pull 下來，檢查 ssh key 是否可用：&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token shebang important&quot;&gt;#!/bin/bash -l&lt;/span&gt;
+&lt;span class=&quot;token builtin class-name&quot;&gt;export&lt;/span&gt; &lt;span class=&quot;token assign-left variable&quot;&gt;&lt;span class=&quot;token environment constant&quot;&gt;LC_ALL&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;en_US.UTF-8&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;token builtin class-name&quot;&gt;export&lt;/span&gt; &lt;span class=&quot;token assign-left variable&quot;&gt;&lt;span class=&quot;token environment constant&quot;&gt;LANG&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;en_US.UTF-8&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+
+&lt;span class=&quot;token function&quot;&gt;git&lt;/span&gt; fetch --all
+&lt;span class=&quot;token function&quot;&gt;git&lt;/span&gt; pull --all
+&lt;span class=&quot;token function&quot;&gt;git&lt;/span&gt; checkout origin/feature/SCMA-284-fastlane-cicd
+
+&lt;span class=&quot;token function&quot;&gt;which&lt;/span&gt; ruby
+&lt;span class=&quot;token function&quot;&gt;which&lt;/span&gt; bundle&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;接著按下儲存後按下 左側的 build now 馬上執行 job。&lt;/p&gt;
+&lt;p&gt;如果這個 job 可以成功 fetch/pull 就代表 Jenkins 有權限能存取你的 github repo，且同時使用 rvm 的 ruby 跟 bundler 來安裝 gem。&lt;/p&gt;
+&lt;p&gt;
+  &lt;a
+    class=&quot;gatsby-resp-image-link&quot;
+    href=&quot;https://yoxisem544.github.io/static/166ae9a020e243e9c5b687bd9a95ac04/8ee24/succees-output.png&quot;
+    style=&quot;display: block&quot;
+    target=&quot;_blank&quot;
+    rel=&quot;noopener&quot;
+  &gt;
+  
+  &lt;span
+    class=&quot;gatsby-resp-image-wrapper&quot;
+    style=&quot;position: relative; display: block;  max-width: 590px; margin-left: auto; margin-right: auto;&quot;
+  &gt;
+    &lt;span
+      class=&quot;gatsby-resp-image-background-image&quot;
+      style=&quot;padding-bottom: 87.81321184510251%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAASCAYAAABb0P4QAAAACXBIWXMAAAsSAAALEgHS3X78AAAChElEQVQ4y4VUy27TQBSdP+I/2MA3sQE2bNixYIFQ2SAhIXaodNENpaWCKiAhiJM08St2Hnb8SOyZezl3YgenKaqlo/HEc8+ccx9R5z2Hx6MBj0YjdhzHwhjD8hDRDu3+rkdNvJCTxZLjOOY8z6koChsLmA6oIaa7iFXg+xz6oSVcr9dc1zVVVWVVCjrBBu/mH+ftrCqKIksmmM1mlKapEEcg+6G1/g30gaQTo4W4eT/gVWEYsud5LUj20+nUBb4uFotjpOF5kiQfgO9Q/oc7TLflVomy+XxuIWqXy2WbR5tTINtsNj+xfYHAI6zvsZ510kAHlmGVG+sk7yA3q9WKYT+F/TfAUVmWr4B3uCCHWgIYqTgokvJRFIBay7BqXNet5YLJZNIbDocPsN4fDAb3gIe47BcwlXw3hNRtLQUCq0oOiP0syyzkwVoDAZT1UP3X+OktcApcdVO5Z1nIxKrkEAVJoOwMOAe+4LILFOYbvl0CZTcQeWUUidritMRKbAIGgQyrJ0EQPIKip8jRY+TuCc48w9mXaKNc+hNEGqvB2lW2y6Vq1NG2MHEGZSvspbI5kIJILH7E4SsQwXltlSF/bLR29Ra7AqmmoRmtYlXLx3ZSRAWeC5w7xv7zuiy1WF0juDLEtTHXOH+9RyiWYZPaSYF1U+SFBGpYN7dMF/E8YoC4zA4to60YgVahVPc/I1rbkatRhHnMlCyI0iVTke3me1cUIUQTkzSyTAbIL2HvBN9PNfMnDG7fjkSeEYcuwvUNvTdmGU1rGxsVbhtb5thxPX+4HI/6ZRTONrOIK29MHIdbZf6YaewwxQFuMnvESkZI/mHEslRw7xE1ugKaEeskbC81nfe/odNnIWYRJLIAAAAASUVORK5CYII=&apos;); background-size: cover; display: block;&quot;
+    &gt;
+      &lt;img
+        class=&quot;gatsby-resp-image-image&quot;
+        style=&quot;width: 100%; height: 100%; margin: 0; vertical-align: middle; position: absolute; top: 0; left: 0; box-shadow: inset 0px 0px 0px 400px white;&quot;
+        alt=&quot;succees-output&quot;
+        title=&quot;&quot;
+        src=&quot;https://yoxisem544.github.io/static/166ae9a020e243e9c5b687bd9a95ac04/b9e4f/succees-output.png&quot;
+        srcset=&quot;https://yoxisem544.github.io/static/166ae9a020e243e9c5b687bd9a95ac04/cf440/succees-output.png 148w,https://yoxisem544.github.io/static/166ae9a020e243e9c5b687bd9a95ac04/d2d38/succees-output.png 295w,https://yoxisem544.github.io/static/166ae9a020e243e9c5b687bd9a95ac04/b9e4f/succees-output.png 590w,https://yoxisem544.github.io/static/166ae9a020e243e9c5b687bd9a95ac04/8ee24/succees-output.png 878w&quot;
+        sizes=&quot;(max-width: 590px) 100vw, 590px&quot;
+      /&gt;
+    &lt;/span&gt;
+  &lt;/span&gt;
+  
+  &lt;/a&gt;
+    &lt;/p&gt;
+&lt;h2 id=&quot;執行-fastlane&quot;&gt;&lt;a href=&quot;#%E5%9F%B7%E8%A1%8C-fastlane&quot; aria-hidden class=&quot;anchor&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;執行 fastlane&lt;/h2&gt;
+&lt;p&gt;由於我的電腦上裝了兩個版本的 ruby：&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;$ rvm list
+   ruby-2.4.1 &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt; x86_64 &lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;
+&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;* ruby-2.6.3 &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt; x86_64 &lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;不過我們希望在執行 jenkins 中的 fastlane 是使用 ruby 2.4.1 版本執行，我們可以使用 &lt;code class=&quot;language-text&quot;&gt;rvm use&lt;/code&gt; 來切換 ruby 版本。接著我們要使用 bundle 安裝 gem（包含 fastlane, cocoapods）把相依的套件安裝起來，接著我們要透過安裝好的 fastlane 來跑設定好的 lane：&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token shebang important&quot;&gt;#!/bin/bash -l&lt;/span&gt;
+&lt;span class=&quot;token builtin class-name&quot;&gt;export&lt;/span&gt; &lt;span class=&quot;token assign-left variable&quot;&gt;&lt;span class=&quot;token environment constant&quot;&gt;LC_ALL&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;en_US.UTF-8&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;token builtin class-name&quot;&gt;export&lt;/span&gt; &lt;span class=&quot;token assign-left variable&quot;&gt;&lt;span class=&quot;token environment constant&quot;&gt;LANG&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;en_US.UTF-8&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+
+&lt;span class=&quot;token function&quot;&gt;git&lt;/span&gt; fetch --all
+&lt;span class=&quot;token function&quot;&gt;git&lt;/span&gt; pull --all
+&lt;span class=&quot;token function&quot;&gt;git&lt;/span&gt; checkout origin/feature/SCMA-284-fastlane-cicd
+
+rvm use &lt;span class=&quot;token number&quot;&gt;2.4&lt;/span&gt;.1
+bundle i
+bundle &lt;span class=&quot;token builtin class-name&quot;&gt;exec&lt;/span&gt; fastlane beta&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;再來再按下 build now，就可以看到 fastlane 開始跑囉！&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id=&quot;注意事項&quot;&gt;&lt;a href=&quot;#%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A0%85&quot; aria-hidden class=&quot;anchor&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;注意事項&lt;/h3&gt;
+&lt;h4 id=&quot;unlock-keychain&quot;&gt;&lt;a href=&quot;#unlock-keychain&quot; aria-hidden class=&quot;anchor&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;Unlock keychain&lt;/h4&gt;
+&lt;p&gt;因為我們的 jenkins 必須架設在 macOS 環境中，再以 fastlane 去操作 xcode build 打包 ipa，所以經過 code sign 時會需要你打 keychain 的密碼，可以 unlock Jenkins 機器上的 keychain 或者「永遠允許」存取密碼。&lt;/p&gt;
+&lt;h4 id=&quot;binbash--l-原因&quot;&gt;&lt;a href=&quot;#binbash--l-%E5%8E%9F%E5%9B%A0&quot; aria-hidden class=&quot;anchor&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;/!#bin/bash -l 原因&lt;/h4&gt;
+&lt;p&gt;&lt;code class=&quot;language-text&quot;&gt;-l&lt;/code&gt; 是 &lt;code class=&quot;language-text&quot;&gt;--login&lt;/code&gt; 的縮寫，使用 &lt;code class=&quot;language-text&quot;&gt;/!#bin/bash -l&lt;/code&gt; 當開頭話， bash 會去找你的 .bashrc or .zshrc 檔案（幫你做一次 source ~/.xxxrc），如果你有遇到找不到 bundle 的問題，可以試試看這著方式。&lt;/p&gt;
+&lt;h4 id=&quot;uninstall-jenkins&quot;&gt;&lt;a href=&quot;#uninstall-jenkins&quot; aria-hidden class=&quot;anchor&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;Uninstall Jenkins&lt;/h4&gt;
+&lt;p&gt;由於我們的 Jenkins 是透過 Homebrew 安裝的，所以在 &lt;code class=&quot;language-text&quot;&gt;&amp;#39;/Library/Application Support/Jenkins/Uninstall.command&amp;#39;&lt;/code&gt; 目錄底下會找不到 uninstall command。&lt;/p&gt;
+&lt;p&gt;除了要移除 Homebrew 中的 jenkins 以外，還要移除家目錄底下產生的 jenkins 資料檔案也移除，才是真的完整移除 jenkins。（如果想要保留 jenkins 上的資訊，可以保留 ~/.jenkins 資料夾底下的東西）&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;bash&quot;&gt;&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;$ brew uninstall jenkins &lt;span class=&quot;token comment&quot;&gt;# or jenkins-lts&lt;/span&gt;
+$ &lt;span class=&quot;token function&quot;&gt;rm&lt;/span&gt; -rf ~/.jenkins &lt;span class=&quot;token comment&quot;&gt;# 移除所有 jenkins 相關資料&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+                &lt;div style=&quot;margin-top=55px; font-style: italic;&quot;&gt;(This is an article posted to my blog at yoxisem544.github.io. You can read it online by &lt;a href=&quot;https://yoxisem544.github.io/run-your-ios-project-using-fastlane-on-jenkins/&quot;&gt;clicking here&lt;/a&gt;.)&lt;/div&gt;
+              </content:encoded></item><item><title><![CDATA[How to implement exponential retry?]]></title><description><![CDATA[Ways PromiseKit and RxSwift provided don't always fits our need]]></description><link>https://yoxisem544.github.io/exponential-retry/</link><guid isPermaLink="false">https://yoxisem544.github.io/exponential-retry/</guid><pubDate>Mon, 09 Sep 2019 00:00:00 GMT</pubDate><content:encoded>&lt;p&gt;Sometimes, errors occur in real world application. For example, api sometimes failed due to network issue, server issue or awkward network condition. In such cases, we would like to retry several times before throwing an error out.&lt;/p&gt;
 &lt;h1 id=&quot;rxswifts-retry&quot;&gt;&lt;a href=&quot;#rxswifts-retry&quot; aria-hidden class=&quot;anchor&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;RxSwift’s Retry&lt;/h1&gt;
 &lt;p&gt;Let’s take a look at RxSwift’s retry method&lt;/p&gt;
 &lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;swift&quot;&gt;&lt;pre class=&quot;language-swift&quot;&gt;&lt;code class=&quot;language-swift&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;let&lt;/span&gt; disposeBag &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;DisposeBag&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
