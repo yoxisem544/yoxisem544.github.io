@@ -1,4 +1,192 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[David's Hello Swift! Blog RSS Feed]]></title><description><![CDATA[Personal blog by David Lin. I write something about Swift.]]></description><link>https://yoxisem544.github.io</link><generator>GatsbyJS</generator><lastBuildDate>Thu, 12 Dec 2019 16:00:05 GMT</lastBuildDate><item><title><![CDATA[RESTful API and OAuth 2.0]]></title><description><![CDATA[How we structure our network layer]]></description><link>https://yoxisem544.github.io/api-kit/</link><guid isPermaLink="false">https://yoxisem544.github.io/api-kit/</guid><pubDate>Wed, 20 Nov 2019 00:00:00 GMT</pubDate><content:encoded>&lt;h3 id=&quot;table-of-contents&quot;&gt;&lt;a href=&quot;#table-of-contents&quot; aria-hidden class=&quot;anchor&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;Table of Contents&lt;/h3&gt;
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[David's Hello Swift! Blog RSS Feed]]></title><description><![CDATA[Personal blog by David Lin. I write something about Swift.]]></description><link>https://yoxisem544.github.io</link><generator>GatsbyJS</generator><lastBuildDate>Tue, 30 Jun 2020 15:17:22 GMT</lastBuildDate><item><title><![CDATA[Bitrise Cache]]></title><description><![CDATA[How to speed up dependency installation?]]></description><link>https://yoxisem544.github.io/bitrise-cache/</link><guid isPermaLink="false">https://yoxisem544.github.io/bitrise-cache/</guid><pubDate>Tue, 30 Jun 2020 00:00:00 GMT</pubDate><content:encoded>&lt;p&gt;最近因為公司專案緣故深入研究了 Bitrise CI 的 cache 機制，目的是想要降低每次 commit check 的時候都要重新安裝一遍 dependencies，如 gem, homebrew, mint, pods 等等。如果是架在 Jenkins 上就會單純很多，只要管理好跑 Jenkins 的電腦上的環境即可（這裡就只專注在 Bitrise 上）。&lt;/p&gt;
+&lt;h2 id=&quot;套件管理工具&quot;&gt;&lt;a href=&quot;#%E5%A5%97%E4%BB%B6%E7%AE%A1%E7%90%86%E5%B7%A5%E5%85%B7&quot; aria-hidden class=&quot;anchor&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;套件管理工具&lt;/h2&gt;
+&lt;p&gt;我們希望公司內每個 iOS 的開發環境一致，所以我們使用了以下幾個套件管理工具：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;rbenv：管理 ruby 版本。&lt;/li&gt;
+&lt;li&gt;bundler：管理專案中 gem 的路徑，我們將它裝在 ./vendor/bundle 目錄底下，如此一來 ci 或其他開發者可以透過 bundle exec 來執行安裝在 working directory 底下的 gem，就不會因為 gem 版本不一樣而打架了。&lt;/li&gt;
+&lt;li&gt;mint：管理 SwiftLint &amp;#x26; SwiftFormat 版本，由於 linter 每個版本的規則會略有增減，不同版本的 linter 會造成規則不同的錯誤。&lt;/li&gt;
+&lt;li&gt;cocoapods：可以透過 bundler 管理，大家應該都很熟悉，就不贅述了。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&quot;在尚未-cache-前&quot;&gt;&lt;a href=&quot;#%E5%9C%A8%E5%B0%9A%E6%9C%AA-cache-%E5%89%8D&quot; aria-hidden class=&quot;anchor&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;在尚未 cache 前&lt;/h2&gt;
+&lt;p align=&quot;center&quot;&gt;
+  &lt;a class=&quot;gatsby-resp-image-link&quot; href=&quot;https://yoxisem544.github.io/static/343dc45ee064b7dbd11cfd8db61c78b2/da6b3/img1.png&quot; style=&quot;display: block&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;
+  
+  &lt;span class=&quot;gatsby-resp-image-wrapper&quot; style=&quot;position: relative; display: block;  max-width: 590px; margin-left: auto; margin-right: auto;&quot;&gt;
+    &lt;span class=&quot;gatsby-resp-image-background-image&quot; style=&quot;padding-bottom: 68.29608938547487%; position: relative; bottom: 0; left: 0; background-image: url(&amp;apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAOCAYAAAAvxDzwAAAACXBIWXMAABYlAAAWJQFJUiTwAAABpUlEQVQ4y41UWXaCQBDkRGyiRhMVBEFccGNziTH3P0SnqwcVE57xo177Zqmp6mrUDG9L5nhHurslw9uRyajXVpBTa5KTExbkcDWrvToM3HUVj2b7KR8sqM0XbD8ja5yS5aVScaA/P9L74kSj1YWGyZksX+3Va7t6DFXDYjfe02B9JicuyJzwoZCJA3UBDgC9UiEkv4CHvM039WdHRdielmTMMjIXTDRnW8ucrIh/s50HRX7aSAgXg+VZEaJPNisyopT0KfcyYgw3pI9qcJ9hS93pnnpMBtuisBOXZLMyKynuWOSiVpTWFfqPapFBf44ef9FbfGBCXxGCAFZNWOe1G6pwVL3jGhrqOxO66wv1boSzPdmrShXUhdljn/xnCjPpHXrYiUrS8EoryiUUI+ZUp6maK+919GYHGS2xDEInKsQqCKUGu8YB/jPQqHwfVpG0KLz3kK3CNkYmaB6PJqhQlGU12L6aQzNh2wkCUZ8SFLxKOFh+Sii3lD94obtk2cmJOmEpXw7kX1N8Cjjks5jFWygYym60l7SwgZeEsOrRfzCqPwiQ/wDBa/Zkmcja2wAAAABJRU5ErkJggg==&amp;apos;); background-size: cover; display: block;&quot;&gt;
+      &lt;img class=&quot;gatsby-resp-image-image&quot; style=&quot;width: 100%; height: 100%; margin: 0; vertical-align: middle; position: absolute; top: 0; left: 0; box-shadow: inset 0px 0px 0px 400px white;&quot; alt=&quot;img1&quot; title src=&quot;https://yoxisem544.github.io/static/343dc45ee064b7dbd11cfd8db61c78b2/b9e4f/img1.png&quot; srcset=&quot;https://yoxisem544.github.io/static/343dc45ee064b7dbd11cfd8db61c78b2/cf440/img1.png 148w,https://yoxisem544.github.io/static/343dc45ee064b7dbd11cfd8db61c78b2/d2d38/img1.png 295w,https://yoxisem544.github.io/static/343dc45ee064b7dbd11cfd8db61c78b2/b9e4f/img1.png 590w,https://yoxisem544.github.io/static/343dc45ee064b7dbd11cfd8db61c78b2/f9b6a/img1.png 885w,https://yoxisem544.github.io/static/343dc45ee064b7dbd11cfd8db61c78b2/2d849/img1.png 1180w,https://yoxisem544.github.io/static/343dc45ee064b7dbd11cfd8db61c78b2/da6b3/img1.png 1432w&quot; sizes=&quot;(max-width: 590px) 100vw, 590px&quot;&gt;
+    &lt;/span&gt;
+  &lt;/span&gt;
+  
+  &lt;/a&gt;
+    &lt;/p&gt;
+&lt;p&gt;可以看到 bundle install、Brew Install、Mint Bootstrap 都會耗上幾分鐘的時間去安裝，如果可以讓這些重複執行的動作可以被 cache 住，下次執行時直接從 cache 抓，速度會變的更快！ &lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id=&quot;bitrise-cache-機制&quot;&gt;&lt;a href=&quot;#bitrise-cache-%E6%A9%9F%E5%88%B6&quot; aria-hidden class=&quot;anchor&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;Bitrise Cache 機制&lt;/h3&gt;
+&lt;p&gt;Bitrise 使用了自家的 cache 機制，你可以在 workflow editor 中找到 cache-pull/cache-push 兩個 step&lt;/p&gt;
+&lt;p align=&quot;center&quot;&gt;
+  &lt;a class=&quot;gatsby-resp-image-link&quot; href=&quot;https://yoxisem544.github.io/static/16bbac08b048615ecaf079a77c074daa/97281/img4.png&quot; style=&quot;display: block&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;
+  
+  &lt;span class=&quot;gatsby-resp-image-wrapper&quot; style=&quot;position: relative; display: block;  max-width: 590px; margin-left: auto; margin-right: auto;&quot;&gt;
+    &lt;span class=&quot;gatsby-resp-image-background-image&quot; style=&quot;padding-bottom: 34.77088948787062%; position: relative; bottom: 0; left: 0; background-image: url(&amp;apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAHCAYAAAAIy204AAAACXBIWXMAABYlAAAWJQFJUiTwAAABLklEQVQoz21RTUsDMRDtz/cgePBo8Vi0BwuCKGgRBCtaamupWKwodbvpfmJ387kefGZSd12lh5eZTCYvb14aSis8RH30w2tM0wm0Nsiz3IHnHJwLF3MC1SxSwfEhBbRSUP/Q4CrH4es+mrMdnM6PYIxBwCKwRYClHyKOErsPsaS9racWN2mMEV/hqyigbT/d0Vr/Ep6wNtqLJs7ZsX3VQAhSxl1THaZ2eRMcIS3jp0f0BneYvszcAY0nhADZIaV0oD6qrXMJ/pOLWlwrzATO9u7R2b7FZWuM4tO4UX1v6RAFsRvff2euzuYMXpygu0qQW4Kiprgi7Oz2cLB1hW5r6A5o3MyaXyojVLm0Sm2MrMrSvz8eUsOk94bBxTNmQ68iJB/Vhl8sYRy5rCwpH/wGRLQOc3mK/TUAAAAASUVORK5CYII=&amp;apos;); background-size: cover; display: block;&quot;&gt;
+      &lt;img class=&quot;gatsby-resp-image-image&quot; style=&quot;width: 100%; height: 100%; margin: 0; vertical-align: middle; position: absolute; top: 0; left: 0; box-shadow: inset 0px 0px 0px 400px white;&quot; alt=&quot;img4&quot; title src=&quot;https://yoxisem544.github.io/static/16bbac08b048615ecaf079a77c074daa/b9e4f/img4.png&quot; srcset=&quot;https://yoxisem544.github.io/static/16bbac08b048615ecaf079a77c074daa/cf440/img4.png 148w,https://yoxisem544.github.io/static/16bbac08b048615ecaf079a77c074daa/d2d38/img4.png 295w,https://yoxisem544.github.io/static/16bbac08b048615ecaf079a77c074daa/b9e4f/img4.png 590w,https://yoxisem544.github.io/static/16bbac08b048615ecaf079a77c074daa/97281/img4.png 742w&quot; sizes=&quot;(max-width: 590px) 100vw, 590px&quot;&gt;
+    &lt;/span&gt;
+  &lt;/span&gt;
+  
+  &lt;/a&gt;
+    &lt;/p&gt;
+&lt;p&gt;在你要安裝任何 dependency 之前，或者執行 fastlane 以前，可以透過 cache-pull 將暫存的 cache 檔案抓下來。然後在每次結束 task 之前，將有更動或更新的 dependency 透過 cache-push 在存起來。&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id=&quot;cache-gem--bundler&quot;&gt;&lt;a href=&quot;#cache-gem--bundler&quot; aria-hidden class=&quot;anchor&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;Cache Gem &amp;#x26; Bundler&lt;/h3&gt;
+&lt;p&gt;由於 Bitrise 本身使用 rbenv 管理 ruby 版本，所以我們可以在專案中建立 .ruby-version 指定要使用的 ruby 版本，在此我在 .ruby-version 中指定使用 2.6.5 版本的 ruby。&lt;/p&gt;
+&lt;p&gt;再來我們不希望把安裝好的 gem commit 上 github，所以這裡使用&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;shell&quot;&gt;&lt;pre class=&quot;language-shell&quot;&gt;&lt;code class=&quot;language-shell&quot;&gt;bundle config &lt;span class=&quot;token builtin class-name&quot;&gt;set&lt;/span&gt; path &lt;span class=&quot;token string&quot;&gt;&apos;vendor/bundle&apos;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;指定 bundler 要安裝 gem 的路徑，並且透過 .gitignore 忽略掉。&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;回到 Bitrise 的 Workflow editor 新增一個 run script 如下：&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;yml&quot;&gt;&lt;pre class=&quot;language-yml&quot;&gt;&lt;code class=&quot;language-yml&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token key atrule&quot;&gt;script@1&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;token key atrule&quot;&gt;title&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; Bundle Install
+    &lt;span class=&quot;token key atrule&quot;&gt;inputs&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token key atrule&quot;&gt;content&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;|&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;
+        bundle i&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;blockquote&gt;
+&lt;blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;code class=&quot;language-text&quot;&gt;bundle i&lt;/code&gt; 是 &lt;code class=&quot;language-text&quot;&gt;bundle install&lt;/code&gt; 的縮寫&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;/blockquote&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;如果不清楚要加在哪裡的話，會是在 Script content 那一欄：&lt;/p&gt;
+&lt;p align=&quot;center&quot;&gt;
+  &lt;a class=&quot;gatsby-resp-image-link&quot; href=&quot;https://yoxisem544.github.io/static/ba57139958510264ff7681de1c683a35/ddb0f/img2.png&quot; style=&quot;display: block&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;
+  
+  &lt;span class=&quot;gatsby-resp-image-wrapper&quot; style=&quot;position: relative; display: block;  max-width: 590px; margin-left: auto; margin-right: auto;&quot;&gt;
+    &lt;span class=&quot;gatsby-resp-image-background-image&quot; style=&quot;padding-bottom: 42.10526315789473%; position: relative; bottom: 0; left: 0; background-image: url(&amp;apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAICAYAAAD5nd/tAAAACXBIWXMAABYlAAAWJQFJUiTwAAAA8UlEQVQoz42RzUrEMBSF+/Ku3PgWLlz4DoI4MBs3ymxcjBanadOkSZqmP7RnegIdZkBsAx+30JvDd0iilIKUEkor/H4LPD/s8HT/ise7F3y9n8AzTRO2nsR7j7quwWkqh8P+B5+7Iz7ejlDCzmEj+r7HMAz/wp1xHJEwrCzLiCwlnDfQRiL0Hk3wcNYhhLBK0zQxNNFaI01TsDpDtdIoimL+VrOxgbUWbduuwtAYWFUVhBBgsHPuUqHrugtcXi79xfKPu7Eyg4wxEVpyXgesmXGyMkWiYZZlEb42J20Xsy3cVKZNnufRcnnN65pboSHvnQF1RWibAOQUkwAAAABJRU5ErkJggg==&amp;apos;); background-size: cover; display: block;&quot;&gt;
+      &lt;img class=&quot;gatsby-resp-image-image&quot; style=&quot;width: 100%; height: 100%; margin: 0; vertical-align: middle; position: absolute; top: 0; left: 0; box-shadow: inset 0px 0px 0px 400px white;&quot; alt=&quot;img2&quot; title src=&quot;https://yoxisem544.github.io/static/ba57139958510264ff7681de1c683a35/b9e4f/img2.png&quot; srcset=&quot;https://yoxisem544.github.io/static/ba57139958510264ff7681de1c683a35/cf440/img2.png 148w,https://yoxisem544.github.io/static/ba57139958510264ff7681de1c683a35/d2d38/img2.png 295w,https://yoxisem544.github.io/static/ba57139958510264ff7681de1c683a35/b9e4f/img2.png 590w,https://yoxisem544.github.io/static/ba57139958510264ff7681de1c683a35/f9b6a/img2.png 885w,https://yoxisem544.github.io/static/ba57139958510264ff7681de1c683a35/ddb0f/img2.png 988w&quot; sizes=&quot;(max-width: 590px) 100vw, 590px&quot;&gt;
+    &lt;/span&gt;
+  &lt;/span&gt;
+  
+  &lt;/a&gt;
+    &lt;/p&gt;
+&lt;p&gt;並且在 cache-push 的 cache-paths 增加：&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;yml&quot;&gt;&lt;pre class=&quot;language-yml&quot;&gt;&lt;code class=&quot;language-yml&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token key atrule&quot;&gt;cache-push&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;token key atrule&quot;&gt;inputs&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token key atrule&quot;&gt;cache_paths&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;|&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;
+        &lt;span class=&quot;token comment&quot;&gt;# 記得把註解拿掉，bitrise 不會忽略註解，會造成路徑錯誤&lt;/span&gt;
+        $GEM_CACHE_PATH &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;&gt;&lt;/span&gt; ./.ruby&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;version &lt;span class=&quot;token comment&quot;&gt;# 官方文件的環境變數&lt;/span&gt;
+        ./vendor &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;&gt;&lt;/span&gt; ./Gemfile.lock &lt;span class=&quot;token comment&quot;&gt;# 當 gemfile lock 有變化時，更新 ./vendor 底下的 cache&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;當你看到以下結果時表示 gem 有成功的被 cache 住了：&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;text&quot;&gt;&lt;pre class=&quot;language-text&quot;&gt;&lt;code class=&quot;language-text&quot;&gt;bundle i
++ bundle i
+Using CFPropertyList 3.0.2
+Using concurrent-ruby 1.1.6
+...
+Bundle complete! 3 Gemfile dependencies, 83 gems now installed.
+Bundled gems are installed into `./vendor/bundle`&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;hr&gt;
+&lt;h3 id=&quot;cache-homebrew--mint&quot;&gt;&lt;a href=&quot;#cache-homebrew--mint&quot; aria-hidden class=&quot;anchor&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;Cache Homebrew &amp;#x26; Mint&lt;/h3&gt;
+&lt;p&gt;官方推薦的方法是使用 Brew install 直接安裝需要的套件，再將 cache 打開即可。但其實有更好的方式，因為 Bitrise 內建 brew 所以我們不需要重新安裝一次，也可以透過 run script 的方式直接 &lt;code class=&quot;language-text&quot;&gt;brew install xxx&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;這裡我們要做的事是把 brew 安裝套件的位置抓出來，安裝好之後透過 cache-push 做好 cache，等之後 cache-pull 時可以直接把曾經安裝好的 brew 套件裝回來，第二次執行 brew install 的時候透過 link 的方式直接 link 到 cache 裡的套件。&lt;/p&gt;
+&lt;p&gt;所以這裡我們有幾件事要做：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;先設定要 cache 的 brew 套件環境變數&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;yml&quot;&gt;&lt;pre class=&quot;language-yml&quot;&gt;&lt;code class=&quot;language-yml&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token key atrule&quot;&gt;script&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;token key atrule&quot;&gt;title&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; Set Env Path
+    &lt;span class=&quot;token key atrule&quot;&gt;inputs&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token key atrule&quot;&gt;content&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;|&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;
+        &lt;span class=&quot;token comment&quot;&gt;# 增加我們要 cache 的 brew 套件環境變數，如果有使用到其他的套件，請再手動增加&lt;/span&gt;
+        envman add &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;key BREW_MINT &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;value &quot;$(brew &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;cellar)/mint&quot; &lt;span class=&quot;token comment&quot;&gt;# 指定套件名稱位置&lt;/span&gt;
+        envman add &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;key BREW_OPT_MINT &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;value &quot;/usr/local/opt/mint&quot;  &lt;span class=&quot;token comment&quot;&gt;# 指定套件名稱位置，此為 file alias&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;blockquote&gt;
+&lt;blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;echo ”$(brew —cellar)” 可以取得 brew 安裝套件位置&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;/blockquote&gt;
+&lt;/blockquote&gt;
+&lt;ol start=&quot;2&quot;&gt;
+&lt;li&gt;手動執行 Brew Install&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;由於我們不走 Bitrise 提供給我們的 Brew Install，在此我們要新增一個 run script：&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;yml&quot;&gt;&lt;pre class=&quot;language-yml&quot;&gt;&lt;code class=&quot;language-yml&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token key atrule&quot;&gt;script&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;token key atrule&quot;&gt;title&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; Brew install
+    &lt;span class=&quot;token key atrule&quot;&gt;inputs&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token key atrule&quot;&gt;content&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;|&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;
+        &lt;span class=&quot;token comment&quot;&gt;# 執行上述的 install 方法，沒有套件則先安裝，有的話直接 link cache 中的套件&lt;/span&gt;
+        brew install mint
+        brew link mint&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;ol start=&quot;3&quot;&gt;
+&lt;li&gt;記得新增 cache-paths&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;yml&quot;&gt;&lt;pre class=&quot;language-yml&quot;&gt;&lt;code class=&quot;language-yml&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token key atrule&quot;&gt;cache-push&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;token key atrule&quot;&gt;inputs&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token key atrule&quot;&gt;cache_paths&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;|&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;
+        $BITRISE_CACHE_DIR
+        &lt;span class=&quot;token punctuation&quot;&gt;...&lt;/span&gt;
+
+        &lt;span class=&quot;token comment&quot;&gt;# 新增以下 cache_path&lt;/span&gt;
+        $BREW_MINT
+        $BREW_OPT_MINT&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;成功後就會看到&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;text&quot;&gt;&lt;pre class=&quot;language-text&quot;&gt;&lt;code class=&quot;language-text&quot;&gt;+ brew install mint
+Warning: mint 0.14.2 is already installed, it&amp;#39;s just not linked
+You can use `brew link mint` to link this version.
++ brew link mint
+Linking /usr/local/Cellar/mint/0.14.2... 1 symlinks created&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;hr&gt;
+&lt;h3 id=&quot;cache-swiftlint--swiftformat&quot;&gt;&lt;a href=&quot;#cache-swiftlint--swiftformat&quot; aria-hidden class=&quot;anchor&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;Cache SwiftLint &amp;#x26; SwiftFormat&lt;/h3&gt;
+&lt;p&gt;再來執行 task 時會發現每次 mint 要 bootstrap 把需要的套件安裝起來後，每次都要等很久，是因為 cache brew 套件並不會把 mint 安裝過的套件也一併 cache 住。&lt;/p&gt;
+&lt;p&gt;原因是 mint 把透過 mint 安裝的套件安裝在 &lt;code class=&quot;language-text&quot;&gt;/usr/local/lib/mint&lt;/code&gt; 底下，所以我們可以在上面設定環境變數的地方再加上&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;yml&quot;&gt;&lt;pre class=&quot;language-yml&quot;&gt;&lt;code class=&quot;language-yml&quot;&gt;envman add &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;key MINT_PACKAGES &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;value &quot;/usr/local/lib/mint&quot;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;然後在 cache-push 的 cache-paths 新增：&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;yml&quot;&gt;&lt;pre class=&quot;language-yml&quot;&gt;&lt;code class=&quot;language-yml&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token key atrule&quot;&gt;cache-push&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;token key atrule&quot;&gt;inputs&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token key atrule&quot;&gt;cache_paths&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;|&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;
+        &lt;span class=&quot;token punctuation&quot;&gt;...&lt;/span&gt;
+
+        &lt;span class=&quot;token comment&quot;&gt;# 新增&lt;/span&gt;
+        $MINT_PACKAGES&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;成功後就會看到：&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;text&quot;&gt;&lt;pre class=&quot;language-text&quot;&gt;&lt;code class=&quot;language-text&quot;&gt;+ mint bootstrap
+🌱 2 packages up to date&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;Mint 不會再 compile 一次浪費時間。&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id=&quot;結果比較&quot;&gt;&lt;a href=&quot;#%E7%B5%90%E6%9E%9C%E6%AF%94%E8%BC%83&quot; aria-hidden class=&quot;anchor&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;結果比較&lt;/h3&gt;
+&lt;p&gt;原先要執行 15.8 分鐘&lt;/p&gt;
+&lt;p align=&quot;center&quot;&gt;
+  &lt;a class=&quot;gatsby-resp-image-link&quot; href=&quot;https://yoxisem544.github.io/static/343dc45ee064b7dbd11cfd8db61c78b2/da6b3/img1.png&quot; style=&quot;display: block&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;
+  
+  &lt;span class=&quot;gatsby-resp-image-wrapper&quot; style=&quot;position: relative; display: block;  max-width: 590px; margin-left: auto; margin-right: auto;&quot;&gt;
+    &lt;span class=&quot;gatsby-resp-image-background-image&quot; style=&quot;padding-bottom: 68.29608938547487%; position: relative; bottom: 0; left: 0; background-image: url(&amp;apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAOCAYAAAAvxDzwAAAACXBIWXMAABYlAAAWJQFJUiTwAAABpUlEQVQ4y41UWXaCQBDkRGyiRhMVBEFccGNziTH3P0SnqwcVE57xo177Zqmp6mrUDG9L5nhHurslw9uRyajXVpBTa5KTExbkcDWrvToM3HUVj2b7KR8sqM0XbD8ja5yS5aVScaA/P9L74kSj1YWGyZksX+3Va7t6DFXDYjfe02B9JicuyJzwoZCJA3UBDgC9UiEkv4CHvM039WdHRdielmTMMjIXTDRnW8ucrIh/s50HRX7aSAgXg+VZEaJPNisyopT0KfcyYgw3pI9qcJ9hS93pnnpMBtuisBOXZLMyKynuWOSiVpTWFfqPapFBf44ef9FbfGBCXxGCAFZNWOe1G6pwVL3jGhrqOxO66wv1boSzPdmrShXUhdljn/xnCjPpHXrYiUrS8EoryiUUI+ZUp6maK+919GYHGS2xDEInKsQqCKUGu8YB/jPQqHwfVpG0KLz3kK3CNkYmaB6PJqhQlGU12L6aQzNh2wkCUZ8SFLxKOFh+Sii3lD94obtk2cmJOmEpXw7kX1N8Cjjks5jFWygYym60l7SwgZeEsOrRfzCqPwiQ/wDBa/Zkmcja2wAAAABJRU5ErkJggg==&amp;apos;); background-size: cover; display: block;&quot;&gt;
+      &lt;img class=&quot;gatsby-resp-image-image&quot; style=&quot;width: 100%; height: 100%; margin: 0; vertical-align: middle; position: absolute; top: 0; left: 0; box-shadow: inset 0px 0px 0px 400px white;&quot; alt=&quot;img1&quot; title src=&quot;https://yoxisem544.github.io/static/343dc45ee064b7dbd11cfd8db61c78b2/b9e4f/img1.png&quot; srcset=&quot;https://yoxisem544.github.io/static/343dc45ee064b7dbd11cfd8db61c78b2/cf440/img1.png 148w,https://yoxisem544.github.io/static/343dc45ee064b7dbd11cfd8db61c78b2/d2d38/img1.png 295w,https://yoxisem544.github.io/static/343dc45ee064b7dbd11cfd8db61c78b2/b9e4f/img1.png 590w,https://yoxisem544.github.io/static/343dc45ee064b7dbd11cfd8db61c78b2/f9b6a/img1.png 885w,https://yoxisem544.github.io/static/343dc45ee064b7dbd11cfd8db61c78b2/2d849/img1.png 1180w,https://yoxisem544.github.io/static/343dc45ee064b7dbd11cfd8db61c78b2/da6b3/img1.png 1432w&quot; sizes=&quot;(max-width: 590px) 100vw, 590px&quot;&gt;
+    &lt;/span&gt;
+  &lt;/span&gt;
+  
+  &lt;/a&gt;
+    &lt;/p&gt;
+&lt;p&gt;變成只要 6.4 分鐘&lt;/p&gt;
+&lt;p align=&quot;center&quot;&gt;
+  &lt;a class=&quot;gatsby-resp-image-link&quot; href=&quot;https://yoxisem544.github.io/static/d73a15ff9488b54b5a44919f334aa8a8/e9603/img3.png&quot; style=&quot;display: block&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;
+  
+  &lt;span class=&quot;gatsby-resp-image-wrapper&quot; style=&quot;position: relative; display: block;  max-width: 590px; margin-left: auto; margin-right: auto;&quot;&gt;
+    &lt;span class=&quot;gatsby-resp-image-background-image&quot; style=&quot;padding-bottom: 80.80229226361033%; position: relative; bottom: 0; left: 0; background-image: url(&amp;apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAQCAYAAAAWGF8bAAAACXBIWXMAABYlAAAWJQFJUiTwAAAB2ElEQVQ4y41U6XqCQBDjhcqh1tZeIkLlUGwRQXvZ93+JaTK7Hq1+1R9x+WQ3m8xkcPxoIUFUizeqhM+H4P836Vr6k5Wu18+t+KPF0T5vZMD9Dn868VK6cSN+iBdhJd6w0pWHSXSbreVh9on1Tdzhq16uCI0Ing/GNTiW4nTwMCje5fF1I91JI0GClykQ13qjKlIF5gIe3AHve1A9nG8UvNAh+3W+Em+6FH8GwqlFggMjc0gxPni2oLpe0sgdBcEB3TjcSMIgh2USZVAXHSsxBHtsCbsg1JJMP7XWDm10nhtx01rcHMiAAkgX4k6AqNK6ueFfVHKF/0lMItqlWrXcL9bSmbXGatbsLZ4Da5i0Msjf5ancGMtKmK8lKBGJ0tg2cahP4Hek6I6qmIDw5VvuQIwuW4VzqxDE2unoUoWN1m+nUAuLuHiprVsCIIes0VmwhuN6F3ytoXY5Q5cLWC0QnRyI65MTcQTs4UCQ7L74MF3eNiVgU0prOT7O3ClsczjI3+TpMNjaFNbwpdU8aqDHlxNS3WP5hVlfGcu9tNXuerRrh/2sXbuvayeFpBxDJeynZlKCyb672+H/D2wM9/MrxPppU1jU4fxbbwixmrn80k2XBty3meTX5ge7ND30qmSsAgAAAABJRU5ErkJggg==&amp;apos;); background-size: cover; display: block;&quot;&gt;
+      &lt;img class=&quot;gatsby-resp-image-image&quot; style=&quot;width: 100%; height: 100%; margin: 0; vertical-align: middle; position: absolute; top: 0; left: 0; box-shadow: inset 0px 0px 0px 400px white;&quot; alt=&quot;img3&quot; title src=&quot;https://yoxisem544.github.io/static/d73a15ff9488b54b5a44919f334aa8a8/b9e4f/img3.png&quot; srcset=&quot;https://yoxisem544.github.io/static/d73a15ff9488b54b5a44919f334aa8a8/cf440/img3.png 148w,https://yoxisem544.github.io/static/d73a15ff9488b54b5a44919f334aa8a8/d2d38/img3.png 295w,https://yoxisem544.github.io/static/d73a15ff9488b54b5a44919f334aa8a8/b9e4f/img3.png 590w,https://yoxisem544.github.io/static/d73a15ff9488b54b5a44919f334aa8a8/f9b6a/img3.png 885w,https://yoxisem544.github.io/static/d73a15ff9488b54b5a44919f334aa8a8/2d849/img3.png 1180w,https://yoxisem544.github.io/static/d73a15ff9488b54b5a44919f334aa8a8/e9603/img3.png 1396w&quot; sizes=&quot;(max-width: 590px) 100vw, 590px&quot;&gt;
+    &lt;/span&gt;
+  &lt;/span&gt;
+  
+  &lt;/a&gt;
+    &lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Bundle install 2.7 min -&gt; 2.8 sec&lt;/li&gt;
+&lt;li&gt;Mint Bootstrap 6.4 min -&gt; 1.72 sec&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;每次 commit push 都可以省下將近 10 分鐘的時間，長久累積下來絕對不是個小數目。&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id=&quot;參考資源&quot;&gt;&lt;a href=&quot;#%E5%8F%83%E8%80%83%E8%B3%87%E6%BA%90&quot; aria-hidden class=&quot;anchor&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;參考資源&lt;/h3&gt;
+&lt;p&gt;&lt;a href=&quot;https://qiita.com/Kazuma_Nagano/items/502c1733f1b6da3a9073&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;[iOS] Bitriseのキャッシュをできるだけ生かしてCI / CDの高速化を図る - @Kazuma_Nagano&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://qiita.com/yosshi4486/items/cca97bf84e0be71569ee_&quot; target=&quot;_blank&quot; rel=&quot;nofollow noopener noreferrer&quot;&gt;Bitriseで gemとbrewのキャッシュ - @yosshi4486&lt;/a&gt;&lt;/p&gt;
+                &lt;div style=&quot;margin-top=55px; font-style: italic;&quot;&gt;(This is an article posted to my blog at yoxisem544.github.io. You can read it online by &lt;a href=&quot;https://yoxisem544.github.io/bitrise-cache/&quot;&gt;clicking here&lt;/a&gt;.)&lt;/div&gt;
+              </content:encoded></item><item><title><![CDATA[RESTful API and OAuth 2.0]]></title><description><![CDATA[How we structure our network layer]]></description><link>https://yoxisem544.github.io/api-kit/</link><guid isPermaLink="false">https://yoxisem544.github.io/api-kit/</guid><pubDate>Wed, 20 Nov 2019 00:00:00 GMT</pubDate><content:encoded>&lt;h3 id=&quot;table-of-contents&quot;&gt;&lt;a href=&quot;#table-of-contents&quot; aria-hidden class=&quot;anchor&quot;&gt;&lt;svg aria-hidden=&quot;true&quot; height=&quot;16&quot; version=&quot;1.1&quot; viewBox=&quot;0 0 16 16&quot; width=&quot;16&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/a&gt;Table of Contents&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&quot;./#basics&quot;&gt;Basics&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;./#networkclient&quot;&gt;NetworkClient&lt;/a&gt;&lt;/li&gt;
